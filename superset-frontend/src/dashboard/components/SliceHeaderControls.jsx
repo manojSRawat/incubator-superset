@@ -205,7 +205,7 @@ class SliceHeaderControls extends React.PureComponent {
 
         <Menu.Item key={MENU_KEYS.RESIZE_LABEL}>{resizeLabel}</Menu.Item>
 
-        <Menu.Item key={MENU_KEYS.SHARE_CHART}>
+        {this.props.supersetCanExplore && (<Menu.Item key={MENU_KEYS.SHARE_CHART}>
           <URLShortLinkModal
             url={getDashboardUrl(
               window.location.pathname,
@@ -216,7 +216,7 @@ class SliceHeaderControls extends React.PureComponent {
             title={t('Share chart')}
             triggerNode={<span>{t('Share chart')}</span>}
           />
-        </Menu.Item>
+        </Menu.Item>)}
 
         <Menu.Item key={MENU_KEYS.DOWNLOAD_AS_IMAGE}>
           {t('Download as image')}

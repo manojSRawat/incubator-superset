@@ -23,7 +23,7 @@ import {
 } from '@superset-ui/legacy-preset-chart-big-number';
 import CalendarChartPlugin from '@superset-ui/legacy-plugin-chart-calendar';
 import ChordChartPlugin from '@superset-ui/legacy-plugin-chart-chord';
-import CountryMapChartPlugin from '@superset-ui/legacy-plugin-chart-country-map';
+import CountryMapChartPlugin from '@superset-ui/legacy-plugin-chart-country-map/src';
 import EventFlowChartPlugin from '@superset-ui/legacy-plugin-chart-event-flow';
 import ForceDirectedChartPlugin from '@superset-ui/legacy-plugin-chart-force-directed';
 import HeatmapChartPlugin from '@superset-ui/legacy-plugin-chart-heatmap';
@@ -52,7 +52,7 @@ import {
   LineChartPlugin,
   LineMultiChartPlugin,
   TimePivotChartPlugin,
-} from '@superset-ui/legacy-preset-chart-nvd3';
+} from '@superset-ui/legacy-preset-chart-nvd3/src';
 import { DeckGLChartPreset } from '@superset-ui/legacy-preset-chart-deckgl';
 import {
   EchartsPieChartPlugin,
@@ -60,6 +60,7 @@ import {
   EchartsTimeseriesChartPlugin,
 } from '@superset-ui/plugin-chart-echarts';
 
+import { ConditionalTableChartPlugin } from '@superset-ui/plugin-chart-conditional-table/src';
 import FilterBoxChartPlugin from '../FilterBox/FilterBoxChartPlugin';
 import TimeTableChartPlugin from '../TimeTable/TimeTableChartPlugin';
 
@@ -105,6 +106,7 @@ export default class MainPreset extends Preset {
         new TreemapChartPlugin().configure({ key: 'treemap' }),
         new WordCloudChartPlugin().configure({ key: 'word_cloud' }),
         new WorldMapChartPlugin().configure({ key: 'world_map' }),
+        new ConditionalTableChartPlugin().configure({ key: 'conditional_table' }),
         new EchartsTimeseriesChartPlugin().configure({
           key: 'echarts_timeseries',
         }),
