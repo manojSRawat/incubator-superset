@@ -39,6 +39,7 @@ import VizTypeControl from './VizTypeControl';
 import MetricsControl from './MetricsControl';
 import AdhocFilterControl from './AdhocFilterControl';
 import FilterBoxItemControl from './FilterBoxItemControl';
+import ConditionalTableFilterBox from './ConditionalTableFilterBox';
 
 const controlMap = {
   AnnotationLayerControl,
@@ -64,5 +65,6 @@ const controlMap = {
   MetricsControl,
   AdhocFilterControl,
   FilterBoxItemControl,
+  ConditionalTableFilterBox,
 };
 export default controlMap;
