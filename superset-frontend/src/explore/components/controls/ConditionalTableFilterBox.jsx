@@ -159,21 +159,11 @@ export default class ConditionalTableFilterBox extends React.Component {
     return (
       <div> 
         <FormRow
-          label={t('Column')}
+          label={t('Column Key')}
           control={
-            <SelectControl
+            <TextControl
               value={this.state.column}
               name="column"
-              clearable={false}
-              options={this.props.datasource.columns
-                .filter(col => col !== this.state.column)
-                .map(col => ({
-                  value: col.column_name,
-                  label: col.column_name,
-                }))
-                .concat([
-                  { value: this.state.column, label: this.state.column },
-                ])}
               onChange={v => this.onControlChange('column', v)}
             />
           }
