@@ -64,9 +64,9 @@ import {
   AntdSelectFilterPlugin,
 } from '@superset-ui/plugin-filter-antd';
 
+import { ConditionalTableChartPlugin } from '@superset-ui/plugin-chart-conditional-table/src';
 import FilterBoxChartPlugin from '../FilterBox/FilterBoxChartPlugin';
 import TimeTableChartPlugin from '../TimeTable/TimeTableChartPlugin';
-import { ConditionalTableChartPlugin } from '@superset-ui/plugin-chart-conditional-table';
 
 export default class MainPreset extends Preset {
   constructor() {
