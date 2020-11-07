@@ -60,9 +60,9 @@ import {
   EchartsTimeseriesChartPlugin,
 } from '@superset-ui/plugin-chart-echarts';
 
+import { ConditionalTableChartPlugin } from '@superset-ui/plugin-chart-conditional-table/src';
 import FilterBoxChartPlugin from '../FilterBox/FilterBoxChartPlugin';
 import TimeTableChartPlugin from '../TimeTable/TimeTableChartPlugin';
-import { ConditionalTableChartPlugin } from '@superset-ui/plugin-chart-conditional-table';
 
 export default class MainPreset extends Preset {
   constructor() {
