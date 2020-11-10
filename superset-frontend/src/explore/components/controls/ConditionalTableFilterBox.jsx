@@ -56,7 +56,10 @@ const propTypes = {
   label: PropTypes.string,
   metric: PropTypes.string,
   searchAllOptions: PropTypes.bool,
+  showTotal: PropTypes.bool,
+  disableFilters: PropTypes.bool,
   defaultValue: PropTypes.string,
+  conditions: PropTypes.array,
 };
 
 const defaultProps = {
@@ -65,6 +68,10 @@ const defaultProps = {
   clearable: true,
   multiple: true,
   searchAllOptions: false,
+  conditions: [],
+  showTotal: false,
+  disableFilters: true,
+  disableSortBy: false,
 };
 
 const STYLE_WIDTH = { width: 350 };
@@ -82,9 +89,11 @@ export default class ConditionalTableFilterBox extends React.Component {
       label,
       defaultValue,
       alignment,
-      format, 
+      format,
       showTotal,
       conditions,
+      disableFilters,
+      disableSortBy,
     } = props;
     this.state = {
       column,
@@ -96,9 +105,11 @@ export default class ConditionalTableFilterBox extends React.Component {
       searchAllOptions,
       defaultValue,
       alignment,
-      format, 
+      format,
       showTotal,
-      conditions: conditions ? conditions : []
+      conditions,
+      disableFilters,
+      disableSortBy,
     };
     this.symbols = [
       ['=', 'EQUAL'],
@@ -110,11 +121,11 @@ export default class ConditionalTableFilterBox extends React.Component {
     this.alignments = [
       ['left', 'Left'],
       ['right', 'Right'],
-      ['center', 'Center']
+      ['center', 'Center'],
     ];
     this.formats = [
       ['IN', 'Indian number'],
-      ['PERCENTAGE', 'Percentage']
+      ['PERCENTAGE', 'Percentage'],
     ];
     this.onChange = this.onChange.bind(this);
     this.onControlChange = this.onControlChange.bind(this);
@@ -157,7 +168,7 @@ export default class ConditionalTableFilterBox extends React.Component {
 
   renderForm() {
     return (
-      <div> 
+      <div>
         <FormRow
           label={t('Column Key')}
           control={
@@ -195,48 +206,87 @@ export default class ConditionalTableFilterBox extends React.Component {
           tooltip={t('Total')}
           isCheckbox
           control={
-            <CheckboxControl 
+            <CheckboxControl
               value={this.state.showTotal}
               onChange={v => this.onControlChange('showTotal', v)}
             />
           }
         />
-        <div className="row" style={{margin: "15px 5px 0 0"}}>
+        <FormRow
+          label={t('Disable Filter')}
+          tooltip={t('Disable search option')}
+          isCheckbox
+          control={
+            <CheckboxControl
+              value={this.state.disableFilters}
+              onChange={v => this.onControlChange('disableFilters', v)}
+            />
+          }
+        />
+        <FormRow
+          label={t('Disable Sorting')}
+          tooltip={t('Disable sorting')}
+          isCheckbox
+          control={
+            <CheckboxControl
+              value={this.state.disableSortBy}
+              onChange={v => this.onControlChange('disableSortBy', v)}
+            />
+          }
+        />
+        <div className="row" style={{ margin: '15px 5px 0 0' }}>
           <div className="ant-popover-title">
-           <span style={{marginRight: "5px"}}>Conditions</span>
-           <i onClick={this.addNewForm} className="fa fa-plus fa-lg text-primary" />
+            <span style={{ marginRight: '5px' }}>Conditions</span>
+            <i
+              onClick={this.addNewForm}
+              className="fa fa-plus fa-lg text-primary"
+            />
           </div>
         </div>
-        
+
         {this.renderFormArray()}
-        
       </div>
     );
   }
 
-  addNewForm = ()=>{
-    const {conditions} = this.state;
-    conditions.push({initialValue: null, initialSymbol: null, finalValue: null, finalSymbol: null, color: {r: 0, g: 0, b: 0, a: 255}});
-    this.setState({conditions: JSON.parse(JSON.stringify(conditions))});
+  addNewForm = () => {
+    const { conditions } = this.state;
+    conditions.push({
+      initialValue: null,
+      initialSymbol: null,
+      finalValue: null,
+      finalSymbol: null,
+      color: { r: 0, g: 0, b: 0, a: 255 },
+    });
+    this.setState({ conditions: JSON.parse(JSON.stringify(conditions)) });
   };
 
   renderFormArray = () => {
-    const {conditions} = this.state;
+    const { conditions } = this.state;
     const result = [];
-    const onChange = (key, value, index) =>{
+    const onChange = (key, value, index) => {
       conditions[index][key] = value;
       // this.setState({conditions: JSON.parse(JSON.stringify(conditions))});
-      this.setState({ conditions: JSON.parse(JSON.stringify(conditions)) }, this.onChange);
-    }
-  
+      this.setState(
+        { conditions: JSON.parse(JSON.stringify(conditions)) },
+        this.onChange,
+      );
+    };
+
     conditions.forEach((value, index) => {
-      result.push(<ArrayFunction onChange={onChange} symbols={this.symbols} value={value} index={index} key={index} />);
+      result.push(
+        <ArrayFunction
+          onChange={onChange}
+          symbols={this.symbols}
+          value={value}
+          index={index}
+          key={index}
+        />,
+      );
     });
 
     return result;
-  }
-
-
+  };
 
   renderPopover() {
     return (
@@ -247,7 +297,7 @@ export default class ConditionalTableFilterBox extends React.Component {
   }
 
   render() {
-    const {conditions} = this.state;
+    const { conditions } = this.state;
     return (
       <span>
         {this.textSummary()}{' '}
@@ -268,70 +318,71 @@ export default class ConditionalTableFilterBox extends React.Component {
   }
 }
 
-const ArrayFunction  = ({value, index, onChange, symbols}) => {
-  return <>
-    <FormRow
-          label={t('Initial Value')}
-          control={
-            <TextControl
-              value={value['initialValue']}
-              name="initialValue"
-              onChange={v => onChange('initialValue', v, index)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Initial Symbol')}
-          control={
-            <SelectControl 
-              choices={symbols}
-              name="initialSymbol"
-              value={value['initialSymbol']}
-              onChange={v => onChange('initialSymbol', v, index)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Final Value')}
-          control={
-            <TextControl
-              value={value['finalValue']}
-              name="finalValue"
-              onChange={v => onChange('finalValue', v, index)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Final Symbol')}
-          control={
-            <SelectControl 
-              choices={symbols}
-              name="finalSymbol"
-              value={value['finalSymbol']}
-              onChange={v => onChange('finalSymbol', v, index)}
-            />
-          }
-        />
-        <FormRow
-          label={t('color')}
-          control={
-            <ColorPickerControl 
-              name="color"
-              value={value['color']}
-              onChange={v => onChange('color', v, index)}
-            />
-          }
-        />
+const ArrayFunction = ({ value, index, onChange, symbols }) => {
+  return (
+    <>
+      <FormRow
+        label={t('Initial Value')}
+        control={
+          <TextControl
+            value={value.initialValue}
+            name="initialValue"
+            onChange={v => onChange('initialValue', v, index)}
+          />
+        }
+      />
+      <FormRow
+        label={t('Initial Symbol')}
+        control={
+          <SelectControl
+            choices={symbols}
+            name="initialSymbol"
+            value={value.initialSymbol}
+            onChange={v => onChange('initialSymbol', v, index)}
+          />
+        }
+      />
+      <FormRow
+        label={t('Final Value')}
+        control={
+          <TextControl
+            value={value.finalValue}
+            name="finalValue"
+            onChange={v => onChange('finalValue', v, index)}
+          />
+        }
+      />
+      <FormRow
+        label={t('Final Symbol')}
+        control={
+          <SelectControl
+            choices={symbols}
+            name="finalSymbol"
+            value={value.finalSymbol}
+            onChange={v => onChange('finalSymbol', v, index)}
+          />
+        }
+      />
+      <FormRow
+        label={t('color')}
+        control={
+          <ColorPickerControl
+            name="color"
+            value={value.color}
+            onChange={v => onChange('color', v, index)}
+          />
+        }
+      />
 
-        <hr
-          style={{
-            color: '#000',
-            height: 5
-          }}
-        />
+      <hr
+        style={{
+          color: '#000',
+          height: 5,
+        }}
+      />
+    </>
+  );
+};
 
-  </>;
-}
- 
 ConditionalTableFilterBox.propTypes = propTypes;
 ConditionalTableFilterBox.defaultProps = defaultProps;
