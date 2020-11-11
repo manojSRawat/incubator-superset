@@ -228,18 +228,20 @@ class SliceHeaderControls extends React.PureComponent {
           </Menu.Item>
         )}
 
-        <Menu.Item key={MENU_KEYS.SHARE_CHART}>
-          <URLShortLinkModal
-            url={getDashboardUrl(
-              window.location.pathname,
-              getActiveFilters(),
-              componentId,
-            )}
-            addDangerToast={addDangerToast}
-            title={t('Share chart')}
-            triggerNode={<span>{t('Share chart')}</span>}
-          />
-        </Menu.Item>
+        {this.props.supersetCanExplore && (
+          <Menu.Item key={MENU_KEYS.SHARE_CHART}>
+            <URLShortLinkModal
+              url={getDashboardUrl(
+                window.location.pathname,
+                getActiveFilters(),
+                componentId,
+              )}
+              addDangerToast={addDangerToast}
+              title={t('Share chart')}
+              triggerNode={<span>{t('Share chart')}</span>}
+            />
+          </Menu.Item>
+        )}
 
         <Menu.Item key={MENU_KEYS.RESIZE_LABEL}>{resizeLabel}</Menu.Item>
 
