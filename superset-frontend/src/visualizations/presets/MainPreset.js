@@ -23,7 +23,7 @@ import {
 } from '@superset-ui/legacy-preset-chart-big-number';
 import CalendarChartPlugin from '@superset-ui/legacy-plugin-chart-calendar';
 import ChordChartPlugin from '@superset-ui/legacy-plugin-chart-chord';
-import CountryMapChartPlugin from '@superset-ui/legacy-plugin-chart-country-map';
+import CountryMapChartPlugin from '@superset-ui/legacy-plugin-chart-country-map/src';
 import EventFlowChartPlugin from '@superset-ui/legacy-plugin-chart-event-flow';
 import HeatmapChartPlugin from '@superset-ui/legacy-plugin-chart-heatmap';
 import HistogramChartPlugin from '@superset-ui/legacy-plugin-chart-histogram';
@@ -51,7 +51,7 @@ import {
   LineChartPlugin,
   LineMultiChartPlugin,
   TimePivotChartPlugin,
-} from '@superset-ui/legacy-preset-chart-nvd3';
+} from '@superset-ui/legacy-preset-chart-nvd3/src';
 import { DeckGLChartPreset } from '@superset-ui/legacy-preset-chart-deckgl';
 import {
   EchartsPieChartPlugin,
