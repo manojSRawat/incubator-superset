@@ -28,6 +28,7 @@ import CheckboxControl from './CheckboxControl';
 import ColorPickerControl from './ColorPickerControl';
 import TextControl from './TextControl';
 import { FILTER_CONFIG_ATTRIBUTES } from '../../constants';
+import { Col, Collapse, Row, Well } from 'react-bootstrap';
 
 const INTEGRAL_TYPES = new Set([
   'TINYINT',
@@ -106,6 +107,9 @@ export default class ConditionalTableFilterBox extends React.Component {
       defaultValue,
       alignment,
       format,
+      thumbnailHeight,
+      thumbnailWidth,
+      remarkColumn,
       showTotal,
       conditions,
       disableFilters,
@@ -199,6 +203,32 @@ export default class ConditionalTableFilterBox extends React.Component {
               name="format"
               choices={this.formats}
               onChange={v => this.onControlChange('format', v)}
+            />
+          }
+        />
+        <Row className="datasource-container">
+          <ColumnsCol md={6}>
+            <TextControl
+              value={this.state.thumbnailHeight}
+              name="thumbnailHeight"
+              onChange={v => this.onControlChange('thumbnailHeight', v)}
+            />
+          </ColumnsCol>
+          <ColumnsCol md={6}>
+            <TextControl
+              value={this.state.thumbnailWidth}
+              name="remarkColumn"
+              onChange={v => this.onControlChange('thumbnailWidth', v)}
+            />
+          </ColumnsCol>
+        </Row>
+        <FormRow
+          label={t('Remark Column')}
+          control={
+            <TextControl
+              value={this.state.remarkColumn}
+              name="remarkColumn"
+              onChange={v => this.onControlChange('remarkColumn', v)}
             />
           }
         />
