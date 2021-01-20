@@ -40,6 +40,7 @@ import MetricsControl from './MetricControl/MetricsControl';
 import AdhocFilterControl from './FilterControl/AdhocFilterControl';
 import FilterBoxItemControl from './FilterBoxItemControl';
 import ConditionalTableFilterBox from './ConditionalTableFilterBox';
+import ConditionalTableParentHeaderBox from './ConditionalTableParentHeaderBox';
 
 const controlMap = {
   AnnotationLayerControl,
@@ -66,5 +67,6 @@ const controlMap = {
   AdhocFilterControl,
   FilterBoxItemControl,
   ConditionalTableFilterBox,
+  ConditionalTableParentHeaderBox
 };
 export default controlMap;
