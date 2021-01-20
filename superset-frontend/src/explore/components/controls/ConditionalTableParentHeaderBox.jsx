@@ -18,8 +18,8 @@
  */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { t } from '@superset-ui/core';
-import { InfoTooltipWithTrigger } from '@superset-ui/chart-controls';
+import {t} from '@superset-ui/core';
+import {InfoTooltipWithTrigger} from '@superset-ui/chart-controls';
 
 import Popover from 'src/common/components/Popover';
 import FormRow from '../../../components/FormRow';
@@ -27,8 +27,7 @@ import SelectControl from './SelectControl';
 import CheckboxControl from './CheckboxControl';
 import ColorPickerControl from './ColorPickerControl';
 import TextControl from './TextControl';
-import { FILTER_CONFIG_ATTRIBUTES } from '../../constants';
-import { Col, Collapse, Row, Well } from 'react-bootstrap';
+import {FILTER_CONFIG_ATTRIBUTES} from '../../constants';
 
 const INTEGRAL_TYPES = new Set([
   'TINYINT',
@@ -61,13 +60,11 @@ const propTypes = {
   disableFilters: PropTypes.bool,
   defaultValue: PropTypes.string,
   conditions: PropTypes.array,
-  thumbnailHeight: PropTypes.number,
-  thumbnailWidth: PropTypes.number,
-  remarkColumn: PropTypes.string,
 };
 
 const defaultProps = {
-  onChange: () => {},
+  onChange: () => {
+  },
   asc: true,
   clearable: true,
   multiple: true,
@@ -75,13 +72,13 @@ const defaultProps = {
   conditions: [],
   showTotal: false,
   disableFilters: true,
-  thumbnailHeight: 50,
-  thumbnailWidth: 50,
+  // eslint-disable-next-line react/default-props-match-prop-types
+  disableSortBy: false,
 };
 
-const STYLE_WIDTH = { width: 350 };
+const STYLE_WIDTH = {width: 350};
 
-export default class ConditionalTableFilterBox extends React.Component {
+export default class ConditionalTableParentHeaderBox extends React.Component {
   constructor(props) {
     super(props);
     const {
@@ -97,9 +94,6 @@ export default class ConditionalTableFilterBox extends React.Component {
       format,
       showTotal,
       conditions,
-      thumbnailHeight,
-      thumbnailWidth,
-      remarkColumn,
       disableFilters,
       disableSortBy,
     } = props;
@@ -114,9 +108,6 @@ export default class ConditionalTableFilterBox extends React.Component {
       defaultValue,
       alignment,
       format,
-      thumbnailHeight,
-      thumbnailWidth,
-      remarkColumn,
       showTotal,
       conditions,
       disableFilters,
@@ -137,7 +128,7 @@ export default class ConditionalTableFilterBox extends React.Component {
     this.formats = [
       ['IN', 'Indian number'],
       ['PERCENTAGE', 'Percentage'],
-      ['IMAGE', 'Image']
+      ['IMAGE', 'Image'],
     ];
     this.onChange = this.onChange.bind(this);
     this.onControlChange = this.onControlChange.bind(this);
@@ -149,11 +140,11 @@ export default class ConditionalTableFilterBox extends React.Component {
 
   onControlChange(attr, value) {
     let typedValue = value;
-    const { column: selectedColumnName, multiple } = this.state;
+    const {column: selectedColumnName, multiple} = this.state;
     if (value && !multiple && attr === FILTER_CONFIG_ATTRIBUTES.DEFAULT_VALUE) {
       // if single value filter_box,
       // convert input value string to the column's data type
-      const { datasource } = this.props;
+      const {datasource} = this.props;
       const selectedColumn = datasource.columns.find(
         col => col.column_name === selectedColumnName,
       );
@@ -169,10 +160,11 @@ export default class ConditionalTableFilterBox extends React.Component {
         }
       }
     }
-    this.setState({ [attr]: typedValue }, this.onChange);
+    this.setState({[attr]: typedValue}, this.onChange);
   }
 
-  setType() {}
+  setType() {
+  }
 
   textSummary() {
     return this.state.column || 'N/A';
@@ -191,94 +183,9 @@ export default class ConditionalTableFilterBox extends React.Component {
             />
           }
         />
-        <FormRow
-          label={t('Alignment')}
-          control={
-            <SelectControl
-              value={this.state.alignment}
-              name="alignment"
-              choices={this.alignments}
-              onChange={v => this.onControlChange('alignment', v)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Format')}
-          control={
-            <SelectControl
-              value={this.state.format}
-              name="format"
-              choices={this.formats}
-              onChange={v => this.onControlChange('format', v)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Thumbnail Height')}
-          control={
-            <TextControl
-              value={this.state.thumbnailHeight}
-              name="thumbnailHeight"
-              onChange={v => this.onControlChange('thumbnailHeight', v)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Thumbnail Width')}
-          control={
-            <TextControl
-              value={this.state.thumbnailWidth}
-              name="thumbnailWidth"
-              onChange={v => this.onControlChange('thumbnailWidth', v)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Remark Column')}
-          control={
-            <TextControl
-              value={this.state.remarkColumn}
-              name="remarkColumn"
-              onChange={v => this.onControlChange('remarkColumn', v)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Show Total')}
-          tooltip={t('Total')}
-          isCheckbox
-          control={
-            <CheckboxControl
-              value={this.state.showTotal}
-              onChange={v => this.onControlChange('showTotal', v)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Disable Filter')}
-          tooltip={t('Disable search option')}
-          isCheckbox
-          control={
-            <CheckboxControl
-              value={this.state.disableFilters}
-              onChange={v => this.onControlChange('disableFilters', v)}
-            />
-          }
-        />
-        <FormRow
-          label={t('Disable Sorting')}
-          tooltip={t('Disable sorting')}
-          isCheckbox
-          control={
-            <CheckboxControl
-              value={this.state.disableSortBy}
-              onChange={v => this.onControlChange('disableSortBy', v)}
-            />
-          }
-        />
-        <div className="row" style={{ margin: '15px 5px 0 0' }}>
+        <div className="row" style={{margin: '15px 5px 0 0'}}>
           <div className="ant-popover-title">
-            <span style={{ marginRight: '5px' }}>Conditions</span>
+            <span style={{marginRight: '5px'}}>Children</span>
             <i
               onClick={this.addNewForm}
               className="fa fa-plus fa-lg text-primary"
@@ -298,7 +205,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       initialSymbol: null,
       finalValue: null,
       finalSymbol: null,
-      color: { r: 0, g: 0, b: 0, a: 255 },
+      color: {r: 0, g: 0, b: 0, a: 255},
     });
     this.setState({ conditions: JSON.parse(JSON.stringify(conditions)) });
   };
@@ -310,7 +217,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       conditions[index][key] = value;
       // this.setState({conditions: JSON.parse(JSON.stringify(conditions))});
       this.setState(
-        { conditions: JSON.parse(JSON.stringify(conditions)) },
+        { children: JSON.parse(JSON.stringify(conditions)) },
         this.onChange,
       );
     };
@@ -339,7 +246,7 @@ export default class ConditionalTableFilterBox extends React.Component {
   }
 
   render() {
-    const { conditions } = this.state;
+    const {conditions} = this.state;
     return (
       <span>
         {this.textSummary()}{' '}
@@ -354,6 +261,7 @@ export default class ConditionalTableFilterBox extends React.Component {
             className="text-primary"
             label="edit-ts-column"
           />
+
         </Popover>
       </span>
     );
@@ -364,58 +272,15 @@ const ArrayFunction = ({ value, index, onChange, symbols }) => {
   return (
     <>
       <FormRow
-        label={t('Initial Value')}
+        label={t('Child key')}
         control={
           <TextControl
-            value={value.initialValue}
-            name="initialValue"
-            onChange={v => onChange('initialValue', v, index)}
+            value={value.childKey}
+            name="childKey"
+            onChange={v => onChange('childKey', v, index)}
           />
         }
       />
-      <FormRow
-        label={t('Initial Symbol')}
-        control={
-          <SelectControl
-            choices={symbols}
-            name="initialSymbol"
-            value={value.initialSymbol}
-            onChange={v => onChange('initialSymbol', v, index)}
-          />
-        }
-      />
-      <FormRow
-        label={t('Final Value')}
-        control={
-          <TextControl
-            value={value.finalValue}
-            name="finalValue"
-            onChange={v => onChange('finalValue', v, index)}
-          />
-        }
-      />
-      <FormRow
-        label={t('Final Symbol')}
-        control={
-          <SelectControl
-            choices={symbols}
-            name="finalSymbol"
-            value={value.finalSymbol}
-            onChange={v => onChange('finalSymbol', v, index)}
-          />
-        }
-      />
-      <FormRow
-        label={t('color')}
-        control={
-          <ColorPickerControl
-            name="color"
-            value={value.color}
-            onChange={v => onChange('color', v, index)}
-          />
-        }
-      />
-
       <hr
         style={{
           color: '#000',
@@ -426,5 +291,5 @@ const ArrayFunction = ({ value, index, onChange, symbols }) => {
   );
 };
 
-ConditionalTableFilterBox.propTypes = propTypes;
-ConditionalTableFilterBox.defaultProps = defaultProps;
+ConditionalTableParentHeaderBox.propTypes = propTypes;
+ConditionalTableParentHeaderBox.defaultProps = defaultProps;

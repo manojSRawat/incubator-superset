@@ -47,6 +47,7 @@ import DndColumnSelectControl, {
   DndMetricSelect,
 } from './DndColumnSelectControl';
 import ConditionalTableFilterBox from './ConditionalTableFilterBox';
+import ConditionalTableParentHeaderBox from './ConditionalTableParentHeaderBox';
 
 const controlMap = {
   AnnotationLayerControl,
@@ -79,5 +80,6 @@ const controlMap = {
   ConditionalFormattingControl,
   ...sharedControlComponents,
   ConditionalTableFilterBox,
+  ConditionalTableParentHeaderBox
 };
 export default controlMap;
