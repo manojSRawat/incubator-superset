@@ -67,6 +67,7 @@ type AnyReactSelect<OptionType extends OptionTypeBase> =
   | BasicSelect<OptionType>
   | Async<OptionType>
   | Creatable<OptionType>
+  // @ts-ignore
   | AsyncCreatable<OptionType>;
 
 export type SupersetStyledSelectProps<
@@ -85,6 +86,7 @@ export type SupersetStyledSelectProps<
   selectRef?:
     | React.RefCallback<AnyReactSelect<OptionType>>
     | MutableRefObject<AnyReactSelect<OptionType>>;
+    // @ts-ignore
   getInputValue?: (selectBalue: ValueType<OptionType>) => string | undefined;
   optionRenderer?: (option: OptionType) => React.ReactNode;
   valueRenderer?: (option: OptionType) => React.ReactNode;
@@ -106,6 +108,7 @@ function styled<
       > = WindowedSelectComponentType<OptionType>
 >(SelectComponent: SelectComponentType) {
   type SelectProps = SupersetStyledSelectProps<OptionType>;
+  // @ts-ignore
   type Components = SelectComponents<OptionType>;
 
   const SortableSelectComponent = SortableContainer(SelectComponent, {
@@ -113,6 +116,7 @@ function styled<
   });
 
   // default components for the given OptionType
+  // @ts-ignore
   const supersetDefaultComponents: SelectComponentsConfig<OptionType> = DEFAULT_COMPONENTS;
 
   const getSortableMultiValue = (MultiValue: Components['MultiValue']) =>
@@ -169,9 +173,10 @@ function styled<
         typeof option === 'string'
           ? option
           : option[labelKey] || option[valueKey],
-
+      // @ts-nocheck
       formatOptionLabel = (
         option: OptionType,
+        // @ts-ignore
         { context }: FormatOptionLabelMeta<OptionType>,
       ) => {
         if (context === 'value') {
@@ -210,7 +215,9 @@ function styled<
         axis: 'xy',
         onSortEnd: ({ oldIndex, newIndex }) => {
           const newValue = arrayMove(value, oldIndex, newIndex);
+          // @ts-nocheck
           if (restProps.onChange) {
+            // @ts-ignore
             restProps.onChange(newValue, { action: 'set-value' });
           }
         },
@@ -227,6 +234,7 @@ function styled<
     }
 
     // Handle onPaste event
+    // @ts-nocheck
     if (onPaste) {
       const Input =
         (components.Input as SelectComponentsType['Input']) ||
@@ -281,7 +289,9 @@ function styled<
 
     const theme = useTheme();
 
+    // @ts-nocheck
     return (
+      // @ts-ignore
       <MaybeSortableSelect
         ref={setRef}
         className={className}

@@ -54,13 +54,14 @@ export type WindowedMenuListProps = {
  * If may also be `Component<GroupProps<OptionType>>[]` but we are not supporting
  * grouped options just yet.
  */
-
 type MenuListPropsChildren<OptionType> =
+  // @ts-ignore
   | Component<OptionProps<OptionType>>[]
   | ReactElement[];
 
 export type MenuListProps<
   OptionType extends OptionTypeBase
+  // @ts-ignore
 > = MenuListComponentProps<OptionType> & {
   children: MenuListPropsChildren<OptionType>;
   // theme is not present with built-in @types/react-select, but is actually
