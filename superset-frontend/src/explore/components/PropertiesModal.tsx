@@ -157,7 +157,7 @@ export default function PropertiesModal({
     }
     setSubmitting(false);
   };
-
+  // @ts-nocheck
   return (
     <Modal
       show={show}
@@ -259,7 +259,7 @@ export default function PropertiesModal({
             <FormGroup>
               <FormLabel htmlFor="owners">{t('Owners')}</FormLabel>
               <AsyncSelect
-                isMulti
+                false
                 name="owners"
                 value={owners || []}
                 loadOptions={loadOptions}
