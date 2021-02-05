@@ -54,11 +54,11 @@ export type WindowedMenuListProps = {
  * If may also be `Component<GroupProps<OptionType>>[]` but we are not supporting
  * grouped options just yet.
  */
-
+// @ts-nocheck
 type MenuListPropsChildren<OptionType> =
   | Component<OptionProps<OptionType>>[]
   | ReactElement[];
-
+// @ts-nocheck
 export type MenuListProps<
   OptionType extends OptionTypeBase
 > = MenuListComponentProps<OptionType> & {

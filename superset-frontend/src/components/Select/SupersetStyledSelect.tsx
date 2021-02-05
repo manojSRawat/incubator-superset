@@ -164,7 +164,7 @@ function styled<
         typeof option === 'string'
           ? option
           : option[labelKey] || option[valueKey],
-
+      // @ts-nocheck
       formatOptionLabel = (
         option: OptionType,
         { context }: FormatOptionLabelMeta<OptionType>,
@@ -205,6 +205,7 @@ function styled<
         axis: 'xy',
         onSortEnd: ({ oldIndex, newIndex }) => {
           const newValue = arrayMove(value, oldIndex, newIndex);
+          // @ts-nocheck
           if (restProps.onChange) {
             restProps.onChange(newValue, { action: 'set-value' });
           }
@@ -222,6 +223,7 @@ function styled<
     }
 
     // Handle onPaste event
+    // @ts-nocheck
     if (onPaste) {
       const Input = components.Input || defaultComponents.Input;
       components.Input = props => (
@@ -254,6 +256,7 @@ function styled<
         selectRef.current = stateManager;
       }
     };
+    // @ts-nocheck
     return (
       <MaybeSortableSelect
         ref={setRef}

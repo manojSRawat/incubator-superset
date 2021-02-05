@@ -38,7 +38,7 @@ export type WindowedSelectProps<
 export type WindowedSelectComponentType<
   OptionType extends OptionTypeBase
 > = FunctionComponent<WindowedSelectProps<OptionType>>;
-
+// @ts-nocheck
 export function MenuList<OptionType extends OptionTypeBase>({
   children,
   ...props

@@ -31,6 +31,7 @@ import {
  *
  * Always returns an array.
  */
+// @ts-nocheck
 export function findValue<OptionType extends OptionTypeBase>(
   value: ValueType<OptionType> | string,
   options: GroupedOptionsType<OptionType> | OptionsType<OptionType> = [],
