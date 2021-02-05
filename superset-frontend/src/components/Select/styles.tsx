@@ -86,6 +86,7 @@ type styleFnWithSerializedStyles = (
 ) => CSSStyles | CSSStyles[];
 
 export type StylesConfig = {
+  // @ts-ignore
   [key in keyof Styles]: styleFnWithSerializedStyles;
 };
 export type PartialStylesConfig = Partial<StylesConfig>;
@@ -242,11 +243,13 @@ export const DEFAULT_STYLES: PartialStylesConfig = {
 };
 
 const { ClearIndicator, DropdownIndicator, Option } = defaultComponents;
-
+// @ts-ignore
 export const DEFAULT_COMPONENTS: SelectComponentsConfig<any> = {
+  // @ts-ignore
   Option: ({ children, innerProps, data, ...props }) => (
     <ClassNames>
       {({ css }) => (
+        // @ts-ignore
         <Option
           {...props}
           data={data}
@@ -258,11 +261,13 @@ export const DEFAULT_COMPONENTS: SelectComponentsConfig<any> = {
       )}
     </ClassNames>
   ),
+  // @ts-ignore
   ClearIndicator: props => (
     <ClearIndicator {...props}>
       <i className="fa">×</i>
     </ClearIndicator>
   ),
+  // @ts-ignore
   DropdownIndicator: props => (
     <DropdownIndicator {...props}>
       <i
