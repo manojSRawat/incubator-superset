@@ -232,6 +232,7 @@ function styled<
     // @ts-nocheck
     if (onPaste) {
       const Input = components.Input || defaultComponents.Input;
+      // @ts-ignore
       components.Input = props => (
         <div onPaste={onPaste}>
           <Input {...props} />
