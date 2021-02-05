@@ -391,6 +391,7 @@ export default class FilterableTable extends PureComponent<
             ...style,
             top:
               typeof style.top === 'number'
+              // @ts-ignore
                 ? style.top - GRID_POSITION_ADJUSTMENT
                 : style.top,
           }}
@@ -423,6 +424,7 @@ export default class FilterableTable extends PureComponent<
           ...style,
           top:
             typeof style.top === 'number'
+            // @ts-ignore
               ? style.top - GRID_POSITION_ADJUSTMENT
               : style.top,
         }}
