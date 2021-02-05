@@ -113,6 +113,7 @@ type styleFnWithSerializedStyles = (
 ) => CSSStyles | CSSStyles[];
 
 export type StylesConfig = {
+  // @ts-ignore
   [key in keyof Styles]: styleFnWithSerializedStyles;
 };
 export type PartialStylesConfig = Partial<StylesConfig>;

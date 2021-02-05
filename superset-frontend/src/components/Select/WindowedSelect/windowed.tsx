@@ -42,6 +42,7 @@ export type WindowedSelectComponentType<
 export function MenuList<OptionType extends OptionTypeBase>({
   children,
   ...props
+  // @ts-ignore
 }: MenuListComponentProps<OptionType> & {
   selectProps: WindowedSelectProps<OptionType>;
 }) {
