@@ -23,7 +23,7 @@ import AsyncCreatable from 'react-select/async-creatable';
 import windowed from './windowed';
 
 export * from './windowed';
-
+// @ts-nocheck
 export const WindowedSelect = windowed(Select);
 export const WindowedAsyncSelect = windowed(Async);
 export const WindowedCreatableSelect = windowed(Creatable);
