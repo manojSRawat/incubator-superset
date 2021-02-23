@@ -28,6 +28,7 @@ x-superset-volumes: &superset-volumes
   - ./docker/pythonpath_dev:/app/pythonpath
   - ./superset:/app/superset
   - ./superset-frontend:/app/superset-frontend
+  - ../superset-ui:/app/superset-ui
   - superset_home:/app/superset_home
 
 version: "3.7"
@@ -73,7 +74,7 @@ services:
   superset-node:
     image: node:12
     container_name: superset_node
-    command: ["bash", "-c", "cd /app/superset-frontend && npm install -f --no-optional --global webpack webpack-cli && npm install -f --no-optional && npm run dev"]
+    command: ["bash", "-c", "cd /app/superset-frontend && npm install -f --no-optional --global webpack webpack-cli && npm install -f --no-optional && npm link /app/superset-ui/plugins/plugin-chart-conditional-table/ && npm link /app/superset-ui/plugins/legacy-plugin-chart-country-map/ && npm link /app/superset-ui/plugins/legacy-preset-chart-nvd3/ && npm run dev"]
     env_file: docker/.env
     depends_on: *superset-depends-on
     volumes: *superset-volumes
