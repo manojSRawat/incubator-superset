@@ -94,7 +94,6 @@
     "@superset-ui/plugin-chart-word-cloud": "^0.16.1",
     "@superset-ui/plugin-filter-antd": "^0.16.1",
     "@superset-ui/preset-chart-xy": "^0.16.1",
-    "@superset-ui/plugin-chart-conditional-table": "^0.0.0",
     "@vx/responsive": "^0.0.195",
     "abortcontroller-polyfill": "^1.1.9",
     "antd": "^4.9.4",
