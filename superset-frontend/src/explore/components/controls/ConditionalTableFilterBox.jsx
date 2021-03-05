@@ -30,6 +30,7 @@ import TextControl from './TextControl';
 import { FILTER_CONFIG_ATTRIBUTES } from '../../constants';
 import { Col, Collapse, Row, Well } from 'react-bootstrap';
 
+const STYLE_ROW = { marginTop: '5px', minHeight: '30px' };
 const INTEGRAL_TYPES = new Set([
   'TINYINT',
   'SMALLINT',
@@ -58,6 +59,7 @@ const propTypes = {
   metric: PropTypes.string,
   searchAllOptions: PropTypes.bool,
   showTotal: PropTypes.bool,
+  totalFormula: PropTypes.string,
   disableFilters: PropTypes.bool,
   defaultValue: PropTypes.string,
   conditions: PropTypes.array,
@@ -96,6 +98,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       alignment,
       format,
       showTotal,
+      totalFormula,
       conditions,
       thumbnailHeight,
       thumbnailWidth,
@@ -118,6 +121,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       thumbnailWidth,
       remarkColumn,
       showTotal,
+      totalFormula,
       conditions,
       disableFilters,
       disableSortBy,
@@ -196,6 +200,7 @@ export default class ConditionalTableFilterBox extends React.Component {
           control={
             <SelectControl
               value={this.state.alignment}
+              placeholder="Alignment"
               name="alignment"
               choices={this.alignments}
               onChange={v => this.onControlChange('alignment', v)}
@@ -207,6 +212,7 @@ export default class ConditionalTableFilterBox extends React.Component {
           control={
             <SelectControl
               value={this.state.format}
+              placeholder="Number Format"
               name="format"
               choices={this.formats}
               onChange={v => this.onControlChange('format', v)}
@@ -255,6 +261,17 @@ export default class ConditionalTableFilterBox extends React.Component {
           }
         />
         <FormRow
+          label={t('Total Formula')}
+          control={
+            <TextControl
+              name="totalFormula"
+              placeholder="Total Formula"
+              value={this.state.totalFormula}
+              onChange={v => this.onControlChange('totalFormula', v)}
+            />
+          }
+        />
+        <FormRow
           label={t('Disable Filter')}
           tooltip={t('Disable search option')}
           isCheckbox
@@ -265,6 +282,7 @@ export default class ConditionalTableFilterBox extends React.Component {
             />
           }
         />
+
         <FormRow
           label={t('Disable Sorting')}
           tooltip={t('Disable sorting')}
