@@ -20,7 +20,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { t } from '@superset-ui/core';
 import { InfoTooltipWithTrigger } from '@superset-ui/chart-controls';
-//import { Row, Col } from 'react-bootstrap';
 
 import Popover from 'src/common/components/Popover';
 import FormRow from '../../../components/FormRow';
@@ -29,6 +28,7 @@ import CheckboxControl from './CheckboxControl';
 import ColorPickerControl from './ColorPickerControl';
 import TextControl from './TextControl';
 import { FILTER_CONFIG_ATTRIBUTES } from '../../constants';
+// import { Col, Collapse, Row, Well } from 'react-bootstrap';
 
 const STYLE_ROW = { marginTop: '5px', minHeight: '30px' };
 const INTEGRAL_TYPES = new Set([
@@ -59,6 +59,7 @@ const propTypes = {
   metric: PropTypes.string,
   searchAllOptions: PropTypes.bool,
   showTotal: PropTypes.bool,
+  dateFormat: PropTypes.string,
   totalFormula: PropTypes.string,
   disableFilters: PropTypes.bool,
   defaultValue: PropTypes.string,
@@ -76,6 +77,7 @@ const defaultProps = {
   searchAllOptions: false,
   conditions: [],
   showTotal: false,
+  dateFormat: null,
   disableFilters: true,
   thumbnailHeight: 50,
   thumbnailWidth: 50,
@@ -98,6 +100,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       alignment,
       format,
       showTotal,
+      dateFormat,
       totalFormula,
       conditions,
       thumbnailHeight,
@@ -121,6 +124,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       thumbnailWidth,
       remarkColumn,
       showTotal,
+      dateFormat,
       totalFormula,
       conditions,
       disableFilters,
@@ -141,7 +145,8 @@ export default class ConditionalTableFilterBox extends React.Component {
     this.formats = [
       ['IN', 'Indian number'],
       ['PERCENTAGE', 'Percentage'],
-      ['IMAGE', 'Image']
+      ['IMAGE', 'Image'],
+      ['DATE', 'Date']
     ];
     this.onChange = this.onChange.bind(this);
     this.onControlChange = this.onControlChange.bind(this);
@@ -282,7 +287,7 @@ export default class ConditionalTableFilterBox extends React.Component {
             />
           }
         />
-        
+
         <FormRow
           label={t('Disable Sorting')}
           tooltip={t('Disable sorting')}
@@ -291,6 +296,18 @@ export default class ConditionalTableFilterBox extends React.Component {
             <CheckboxControl
               value={this.state.disableSortBy}
               onChange={v => this.onControlChange('disableSortBy', v)}
+            />
+          }
+        />
+        <FormRow
+          label={t('Date Format')}
+          tooltip={t('If it\'s a date filter')}
+          control={
+            <TextControl
+              name="dateFormat"
+              placeholder="Date Format"
+              value={this.state.dateFormat}
+              onChange={v => this.onControlChange('dateFormat', v)}
             />
           }
         />
