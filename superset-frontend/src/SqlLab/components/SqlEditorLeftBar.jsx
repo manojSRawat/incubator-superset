@@ -19,7 +19,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from 'src/components/Button';
-import { t, styled } from '@superset-ui/core';
+import { t, styled, css } from '@superset-ui/core';
+import Collapse from 'src/common/components/Collapse';
 import TableElement from './TableElement';
 import TableSelector from '../../components/TableSelector';
 
@@ -80,6 +81,10 @@ export default class SqlEditorLeftBar extends React.PureComponent {
 
   onDbChange(db) {
     this.props.actions.queryEditorSetDb(this.props.queryEditor, db.id);
+    this.props.actions.queryEditorSetFunctionNames(
+      this.props.queryEditor,
+      db.id,
+    );
   }
 
   onTableChange(tableName, schemaName) {
@@ -141,13 +146,42 @@ export default class SqlEditorLeftBar extends React.PureComponent {
         <div className="divider" />
         <StyledScrollbarContainer>
           <StyledScrollbarContent contentHeight={tableMetaDataHeight}>
-            {this.props.tables.map(table => (
-              <TableElement
-                table={table}
-                key={table.id}
-                actions={this.props.actions}
-              />
-            ))}
+            <Collapse
+              activeKey={this.props.tables
+                .filter(({ expanded }) => expanded)
+                .map(({ id }) => id)}
+              css={theme => css`
+                .ant-collapse-item {
+                  margin-bottom: ${theme.gridUnit * 3}px;
+                }
+                .ant-collapse-header {
+                  padding: 0px !important;
+                  display: flex;
+                  align-items: center;
+                }
+                .ant-collapse-content-box {
+                  padding: 0px ${theme.gridUnit * 4}px 0px 0px !important;
+                }
+                .ant-collapse-arrow {
+                  top: ${theme.gridUnit * 2}px !important;
+                  color: ${theme.colors.primary.dark1} !important;
+                  &: hover {
+                    color: ${theme.colors.primary.dark2} !important;
+                  }
+                }
+              `}
+              expandIconPosition="right"
+              ghost
+            >
+              {this.props.tables.map(table => (
+                <TableElement
+                  table={table}
+                  key={table.id}
+                  actions={this.props.actions}
+                  onClick={this.toggleTable}
+                />
+              ))}
+            </Collapse>
           </StyledScrollbarContent>
         </StyledScrollbarContainer>
         {shouldShowReset && (
@@ -156,7 +190,7 @@ export default class SqlEditorLeftBar extends React.PureComponent {
             buttonStyle="danger"
             onClick={this.resetState}
           >
-            <i className="fa fa-bomb" /> {t('Reset State')}
+            <i className="fa fa-bomb" /> {t('Reset state')}
           </Button>
         )}
       </div>

@@ -19,7 +19,7 @@
 import { snakeCase } from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { SuperChart, logging } from '@superset-ui/core';
+import { SuperChart, logging, Behavior } from '@superset-ui/core';
 import { Logger, LOG_ACTIONS_RENDER_CHART } from '../logger/LogUtils';
 
 const propTypes = {
@@ -42,8 +42,10 @@ const propTypes = {
   refreshOverlayVisible: PropTypes.bool,
   // dashboard callbacks
   addFilter: PropTypes.func,
+  setDataMask: PropTypes.func,
   onFilterMenuOpen: PropTypes.func,
   onFilterMenuClose: PropTypes.func,
+  ownCurrentState: PropTypes.object,
 };
 
 const BLANK = {};
@@ -73,6 +75,9 @@ class ChartRenderer extends React.Component {
       setControlValue: this.handleSetControlValue,
       onFilterMenuOpen: this.props.onFilterMenuOpen,
       onFilterMenuClose: this.props.onFilterMenuClose,
+      setDataMask: dataMask => {
+        this.props.actions?.updateDataMask(this.props.chartId, dataMask);
+      },
     };
   }
 
@@ -89,6 +94,7 @@ class ChartRenderer extends React.Component {
       return (
         this.hasQueryResponseChange ||
         nextProps.annotationData !== this.props.annotationData ||
+        nextProps.ownCurrentState !== this.props.ownCurrentState ||
         nextProps.height !== this.props.height ||
         nextProps.width !== this.props.width ||
         nextProps.triggerRender ||
@@ -178,6 +184,7 @@ class ChartRenderer extends React.Component {
       annotationData,
       datasource,
       initialValues,
+      ownCurrentState,
       formData,
       queriesResponse,
     } = this.props;
@@ -217,8 +224,9 @@ class ChartRenderer extends React.Component {
         datasource={datasource}
         initialValues={initialValues}
         formData={formData}
+        ownCurrentState={ownCurrentState}
         hooks={this.hooks}
-        queryData={queriesResponse?.[0]} // deprecated
+        behaviors={[Behavior.CROSS_FILTER]}
         queriesData={queriesResponse}
         onRenderSuccess={this.handleRenderSuccess}
         onRenderFailure={this.handleRenderFailure}

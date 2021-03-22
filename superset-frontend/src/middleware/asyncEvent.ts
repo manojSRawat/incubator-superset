@@ -79,7 +79,7 @@ const initAsyncEvents = (options: AsyncEventOptions) => {
     try {
       lastReceivedEventId = localStorage.getItem(LOCALSTORAGE_KEY);
     } catch (err) {
-      console.warn('failed to fetch last event Id from localStorage');
+      console.warn('Failed to fetch last event Id from localStorage');
     }
 
     const fetchEvents = makeApi<
@@ -114,13 +114,12 @@ const initAsyncEvents = (options: AsyncEventOptions) => {
       try {
         localStorage.setItem(LOCALSTORAGE_KEY, lastReceivedEventId as string);
       } catch (err) {
-        console.warn('Error saving event ID to localStorage', err);
+        console.warn('Error saving event Id to localStorage', err);
       }
     };
 
     const processEvents = async () => {
-      const state = store.getState();
-      const queuedComponents = getPendingComponents(state);
+      let queuedComponents = getPendingComponents(store.getState());
       const eventArgs = lastReceivedEventId
         ? { last_id: lastReceivedEventId }
         : {};
@@ -128,6 +127,9 @@ const initAsyncEvents = (options: AsyncEventOptions) => {
       if (queuedComponents && queuedComponents.length) {
         try {
           const { result: events } = await fetchEvents(eventArgs);
+          // refetch queuedComponents due to race condition where results are available
+          // before component state is updated with asyncJobId
+          queuedComponents = getPendingComponents(store.getState());
           if (events && events.length) {
             const componentsByJobId = queuedComponents.reduce((acc, item) => {
               acc[item.asyncJobId] = item;
@@ -138,7 +140,7 @@ const initAsyncEvents = (options: AsyncEventOptions) => {
               const component = componentsByJobId[asyncEvent.job_id];
               if (!component) {
                 console.warn(
-                  'component not found for job_id',
+                  'Component not found for job_id',
                   asyncEvent.job_id,
                 );
                 return setLastId(asyncEvent);
@@ -156,7 +158,7 @@ const initAsyncEvents = (options: AsyncEventOptions) => {
                   );
                   break;
                 default:
-                  console.warn('received event with status', asyncEvent.status);
+                  console.warn('Received event with status', asyncEvent.status);
               }
 
               return setLastId(asyncEvent);

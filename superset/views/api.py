@@ -24,12 +24,16 @@ from flask_appbuilder.api import rison
 from flask_appbuilder.security.decorators import has_access_api
 
 from superset import db, event_logger
+from superset.charts.commands.exceptions import (
+    TimeRangeParseFailError,
+    TimeRangeUnclearError,
+)
 from superset.common.query_context import QueryContext
 from superset.legacy import update_time_range
 from superset.models.slice import Slice
 from superset.typing import FlaskResponse
 from superset.utils import core as utils
-from superset.utils.core import get_since_until
+from superset.utils.date_parser import get_since_until
 from superset.views.base import api, BaseSupersetView, handle_api_exception
 
 get_time_range_schema = {"type": "string"}
@@ -93,6 +97,6 @@ class Api(BaseSupersetView):
                 "timeRange": time_range,
             }
             return self.json_response({"result": result})
-        except ValueError as error:
+        except (ValueError, TimeRangeParseFailError, TimeRangeUnclearError) as error:
             error_msg = {"message": f"Unexpected time range: {error}"}
             return self.json_response(error_msg, 400)

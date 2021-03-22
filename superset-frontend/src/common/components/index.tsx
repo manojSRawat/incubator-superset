@@ -18,7 +18,6 @@
  */
 import React from 'react';
 import { styled } from '@superset-ui/core';
-// eslint-disable-next-line no-restricted-imports
 import { Dropdown, Menu as AntdMenu, Input as AntdInput, Skeleton } from 'antd';
 import { DropDownProps } from 'antd/lib/dropdown';
 /*
@@ -26,11 +25,9 @@ import { DropDownProps } from 'antd/lib/dropdown';
 
   For documentation, see https://ant.design/components/overview/
  */
-// eslint-disable-next-line no-restricted-imports
 export {
   AutoComplete,
   Avatar,
-  Button,
   Card,
   Checkbox,
   Col,
@@ -44,20 +41,23 @@ export {
   Typography,
   Tree,
   Popover,
-  Radio,
+  Slider,
   Row,
-  Select,
+  Space,
   Skeleton,
   Switch,
+  Tag,
   Tabs,
   Tooltip,
   Input as AntdInput,
 } from 'antd';
-export { TreeProps } from 'antd/lib/tree';
 export { FormInstance } from 'antd/lib/form';
+export { RadioChangeEvent } from 'antd/lib/radio';
+export { TreeProps } from 'antd/lib/tree';
+export { default as Alert, AlertProps } from 'antd/lib/alert';
+export { default as Select, SelectProps } from 'antd/lib/select';
 
 export { default as Collapse } from './Collapse';
-export { default as Badge } from './Badge';
 export { default as Progress } from './ProgressBar';
 
 export const MenuItem = styled(AntdMenu.Item)`

@@ -144,10 +144,10 @@ export const getRecentAcitivtyObjs = (
             ];
             return res;
           })
-          .catch(e =>
+          .catch(errMsg =>
             addDangerToast(
               t('There was an error fetching your recent activity:'),
-              e,
+              errMsg,
             ),
           );
       }
@@ -160,7 +160,9 @@ export const getRecentAcitivtyObjs = (
 export const createFetchRelated = createFetchResourceMethod('related');
 export const createFetchDistinct = createFetchResourceMethod('distinct');
 
-export function createErrorHandler(handleErrorFunc: (errMsg?: string) => void) {
+export function createErrorHandler(
+  handleErrorFunc: (errMsg?: string | Record<string, string[]>) => void,
+) {
   return async (e: SupersetClientResponse | string) => {
     const parsedError = await getClientErrorObject(e);
     logging.error(e);
@@ -300,12 +302,5 @@ export const CardStyles = styled.div`
   cursor: pointer;
   a {
     text-decoration: none;
-  }
-`;
-
-export const IconContainer = styled.div`
-  svg {
-    vertical-align: -7px;
-    color: ${({ theme }) => theme.colors.primary.dark1};
   }
 `;

@@ -19,7 +19,8 @@
 import React, { ReactNode } from 'react';
 import { ControlType } from '@superset-ui/chart-controls';
 import { JsonValue, QueryFormData } from '@superset-ui/core';
-import { ExploreActions } from '../actions/exploreActions';
+import ErrorBoundary from 'src/components/ErrorBoundary';
+import { ExploreActions } from 'src/explore/actions/exploreActions';
 import controlMap from './controls';
 
 import './Control.less';
@@ -29,9 +30,9 @@ export type ControlProps = {
   // signature to the original action factory.
   actions: Partial<ExploreActions> & Pick<ExploreActions, 'setControlValue'>;
   type: ControlType;
-  label: string;
+  label?: ReactNode;
   name: string;
-  description?: string;
+  description?: ReactNode;
   tooltipOnClick?: () => ReactNode;
   places?: number;
   rightNode?: ReactNode;
@@ -78,11 +79,13 @@ export default class Control extends React.PureComponent<
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
       >
-        <ControlComponent
-          onChange={this.onChange}
-          hovered={this.state.hovered}
-          {...this.props}
-        />
+        <ErrorBoundary>
+          <ControlComponent
+            onChange={this.onChange}
+            hovered={this.state.hovered}
+            {...this.props}
+          />
+        </ErrorBoundary>
       </div>
     );
   }

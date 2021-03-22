@@ -172,6 +172,7 @@ export const table = {
   ],
   expanded: true,
 };
+
 export const defaultQueryEditor = {
   id: 'dfsadfs',
   autorun: false,
@@ -478,6 +479,7 @@ export const initialState = {
     conf: {
       DEFAULT_SQLLAB_LIMIT: 1000,
       SQL_MAX_ROW: 100000,
+      DISPLAY_MAX_ROW: 100,
     },
   },
 };

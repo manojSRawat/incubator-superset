@@ -16,91 +16,62 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { ExtraFormData, QueryObject } from '@superset-ui/core';
-import { Charts, Layout, LayoutItem } from 'src/dashboard/types';
 import {
-  CHART_TYPE,
-  DASHBOARD_ROOT_TYPE,
-  TABS_TYPE,
-  TAB_TYPE,
-} from 'src/dashboard/util/componentTypes';
-import {
-  CascadeFilter,
-  Filter,
-  NativeFiltersState,
-  Scope,
-  TreeItem,
-} from './types';
+  ExtraFormData,
+  QueryFormData,
+  getChartMetadataRegistry,
+  QueryObject,
+  Behavior,
+} from '@superset-ui/core';
+import { Charts } from 'src/dashboard/types';
+import { RefObject } from 'react';
+import { DataMaskStateWithId } from 'src/dataMask/types';
+import { Filter } from './types';
 
-export const isShowTypeInTree = ({ type, meta }: LayoutItem, charts?: Charts) =>
-  (type === TABS_TYPE ||
-    type === TAB_TYPE ||
-    type === CHART_TYPE ||
-    type === DASHBOARD_ROOT_TYPE) &&
-  (!charts || charts[meta?.chartId]?.formData?.viz_type !== 'filter_box');
-
-export const buildTree = (
-  node: LayoutItem,
-  treeItem: TreeItem,
-  layout: Layout,
-  charts: Charts,
-) => {
-  let itemToPass: TreeItem = treeItem;
-  if (isShowTypeInTree(node, charts) && node.type !== DASHBOARD_ROOT_TYPE) {
-    const currentTreeItem = {
-      key: node.id,
-      title: node.meta.sliceName || node.meta.text || node.id.toString(),
-      children: [],
-    };
-    treeItem.children.push(currentTreeItem);
-    itemToPass = currentTreeItem;
+export const getFormData = ({
+  datasetId,
+  cascadingFilters = {},
+  groupby,
+  currentValue,
+  inputRef,
+  defaultValue,
+  controlValues,
+  filterType,
+}: Partial<Filter> & {
+  datasetId?: number;
+  inputRef?: RefObject<HTMLInputElement>;
+  cascadingFilters?: object;
+  groupby?: string;
+}): Partial<QueryFormData> => {
+  const otherProps: { datasource?: string; groupby?: string[] } = {};
+  if (datasetId) {
+    otherProps.datasource = `${datasetId}__table`;
   }
-  node.children.forEach(child =>
-    buildTree(layout[child], itemToPass, layout, charts),
-  );
-};
-
-export const findFilterScope = (
-  checkedKeys: string[],
-  layout: Layout,
-): Scope => {
-  if (!checkedKeys.length) {
-    return {
-      rootPath: [],
-      excluded: [],
-    };
+  if (groupby) {
+    otherProps.groupby = [groupby];
   }
-  const checkedItemParents = checkedKeys.map(key =>
-    (layout[key].parents || []).filter(parent =>
-      isShowTypeInTree(layout[parent]),
-    ),
-  );
-  checkedItemParents.sort((p1, p2) => p1.length - p2.length);
-  const rootPath = checkedItemParents.map(
-    parents => parents[checkedItemParents[0].length - 1],
-  );
-
-  const excluded: number[] = [];
-  const isExcluded = (parent: string, item: string) =>
-    rootPath.includes(parent) && !checkedKeys.includes(item);
-
-  Object.entries(layout).forEach(([key, value]) => {
-    if (
-      value.type === CHART_TYPE &&
-      value.parents?.find(parent => isExcluded(parent, key))
-    ) {
-      excluded.push(value.meta.chartId);
-    }
-  });
-
   return {
-    rootPath: [...new Set(rootPath)],
-    excluded,
+    ...controlValues,
+    ...otherProps,
+    adhoc_filters: [],
+    extra_filters: [],
+    extra_form_data: cascadingFilters,
+    granularity_sqla: 'ds',
+    metrics: ['count'],
+    row_limit: 10000,
+    showSearch: true,
+    currentValue,
+    defaultValue,
+    time_range: 'No filter',
+    time_range_endpoints: ['inclusive', 'exclusive'],
+    url_params: {},
+    viz_type: filterType,
+    inputRef,
   };
 };
 
 export function mergeExtraFormData(
-  originalExtra: ExtraFormData,
+  originalExtra: ExtraFormData = {},
   newExtra: ExtraFormData,
 ): ExtraFormData {
   const {
@@ -110,6 +81,7 @@ export function mergeExtraFormData(
   const {
     override_form_data: newOverride = {},
     append_form_data: newAppend = {},
+    custom_form_data: newCustom = {},
   } = newExtra;
 
   const appendKeys = new Set([
@@ -120,13 +92,14 @@ export function mergeExtraFormData(
   appendKeys.forEach(key => {
     appendFormData[key] = [
       // @ts-ignore
-      ...(originalAppend[key] || []),
+      ...(originalAppend?.[key] || []),
       // @ts-ignore
-      ...(newAppend[key] || []),
+      ...(newAppend?.[key] || []),
     ];
   });
 
   return {
+    custom_form_data: newCustom,
     override_form_data: {
       ...originalOverride,
       ...newOverride,
@@ -135,46 +108,24 @@ export function mergeExtraFormData(
   };
 }
 
+export function isCrossFilter(vizType: string) {
+  // @ts-ignore need export from superset-ui `ItemWithValue`
+  return getChartMetadataRegistry().items[vizType]?.value.behaviors?.includes(
+    Behavior.CROSS_FILTER,
+  );
+}
+
 export function getExtraFormData(
-  nativeFilters: NativeFiltersState,
+  dataMask: DataMaskStateWithId,
+  charts: Charts,
+  filterIdsAppliedOnChart: string[],
 ): ExtraFormData {
   let extraFormData: ExtraFormData = {};
-  Object.keys(nativeFilters.filters).forEach(key => {
-    const filterState = nativeFilters.filtersState[key] || {};
-    const { extraFormData: newExtra = {} } = filterState;
+  filterIdsAppliedOnChart.forEach(key => {
+    const singleDataMask =
+      dataMask.nativeFilters[key] ?? dataMask.crossFilters[key] ?? {};
+    const { extraFormData: newExtra = {} } = singleDataMask;
     extraFormData = mergeExtraFormData(extraFormData, newExtra);
   });
   return extraFormData;
-}
-
-export function mapParentFiltersToChildren(
-  filters: Filter[],
-): { [id: string]: Filter[] } {
-  const cascadeChildren = {};
-  filters.forEach(filter => {
-    const [parentId] = filter.cascadeParentIds || [];
-    if (parentId) {
-      if (!cascadeChildren[parentId]) {
-        cascadeChildren[parentId] = [];
-      }
-      cascadeChildren[parentId].push(filter);
-    }
-  });
-  return cascadeChildren;
-}
-
-export function buildCascadeFiltersTree(filters: Filter[]): CascadeFilter[] {
-  const cascadeChildren = mapParentFiltersToChildren(filters);
-
-  const getCascadeFilter = (filter: Filter): CascadeFilter => {
-    const children = cascadeChildren[filter.id] || [];
-    return {
-      ...filter,
-      cascadeChildren: children.map(getCascadeFilter),
-    };
-  };
-
-  return filters
-    .filter(filter => !filter.cascadeParentIds?.length)
-    .map(getCascadeFilter);
 }

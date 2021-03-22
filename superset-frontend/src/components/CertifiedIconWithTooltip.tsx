@@ -19,7 +19,7 @@
 import React from 'react';
 import { t, supersetTheme } from '@superset-ui/core';
 import Icon from 'src/components/Icon';
-import TooltipWrapper from 'src/components/TooltipWrapper';
+import { Tooltip } from 'src/common/components/Tooltip';
 
 interface CertifiedIconWithTooltipProps {
   certifiedBy?: string;
@@ -33,11 +33,15 @@ function CertifiedIconWithTooltip({
   size = 24,
 }: CertifiedIconWithTooltipProps) {
   return (
-    <TooltipWrapper
-      label="certified-details"
-      tooltip={
+    <Tooltip
+      id="certified-details-tooltip"
+      title={
         <>
-          {certifiedBy && <div>{t('Certified by %s', certifiedBy)}</div>}
+          {certifiedBy && (
+            <div>
+              <strong>{t('Certified by %s', certifiedBy)}</strong>
+            </div>
+          )}
           <div>{details}</div>
         </>
       }
@@ -48,7 +52,7 @@ function CertifiedIconWithTooltip({
         width={size}
         name="certified"
       />
-    </TooltipWrapper>
+    </Tooltip>
   );
 }
 

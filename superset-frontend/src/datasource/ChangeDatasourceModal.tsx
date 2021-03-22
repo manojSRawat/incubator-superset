@@ -23,9 +23,10 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import { Alert, FormControl, FormControlProps } from 'react-bootstrap';
+import { FormControl, FormControlProps } from 'react-bootstrap';
+import Alert from 'src/components/Alert';
 import { SupersetClient, t, styled } from '@superset-ui/core';
-import TableView from 'src/components/TableView';
+import TableView, { EmptyWrapperType } from 'src/components/TableView';
 import StyledModal from 'src/common/components/Modal';
 import Button from 'src/components/Button';
 import { useListViewResource } from 'src/views/CRUD/hooks';
@@ -36,7 +37,12 @@ import Loading from '../components/Loading';
 import withToasts from '../messageToasts/enhancers/withToasts';
 
 const CONFIRM_WARNING_MESSAGE = t(
-  'Warning! Changing the dataset may break the chart if the metadata (columns/metrics) does not exist in the target dataset',
+  'Warning! Changing the dataset may break the chart if the metadata does not exist.',
+);
+
+const CHANGE_WARNING_MSG = t(
+  'Changing the dataset may break the chart if the chart relies ' +
+    'on columns or metadata that does not exist in the target dataset',
 );
 
 interface Datasource {
@@ -83,11 +89,6 @@ const TABLE_COLUMNS = [
   'creator',
 ].map(col => ({ accessor: col, Header: col }));
 
-const CHANGE_WARNING_MSG = t(
-  'Changing the dataset may break the chart if the chart relies ' +
-    'on columns or metadata that does not exist in the target dataset',
-);
-
 const emptyRequest = {
   pageIndex: 0,
   pageSize: 20,
@@ -118,29 +119,30 @@ const ChangeDatasourceModal: FunctionComponent<ChangeDatasourceModalProps> = ({
     setConfirmedDataset(datasource);
   }, []);
 
-  useDebouncedEffect(() => {
-    if (filter) {
+  useDebouncedEffect(
+    () => {
       fetchData({
         ...emptyRequest,
-        filters: [
-          {
-            id: 'table_name',
-            operator: 'ct',
-            value: filter,
-          },
-        ],
+        ...(filter && {
+          filters: [
+            {
+              id: 'table_name',
+              operator: 'ct',
+              value: filter,
+            },
+          ],
+        }),
       });
-    }
-  }, 1000);
+    },
+    300,
+    [filter],
+  );
 
   useEffect(() => {
     const onEnterModal = async () => {
       if (searchRef && searchRef.current) {
         searchRef.current.focus();
       }
-
-      // Fetch initial datasets for tableview
-      await fetchData(emptyRequest);
     };
 
     if (show) {
@@ -186,7 +188,7 @@ const ChangeDatasourceModal: FunctionComponent<ChangeDatasourceModalProps> = ({
         );
       });
     onHide();
-    addSuccessToast('Successfully changed datasource!');
+    addSuccessToast('Successfully changed dataset!');
   };
 
   const handlerCancelConfirm = () => {
@@ -219,15 +221,40 @@ const ChangeDatasourceModal: FunctionComponent<ChangeDatasourceModalProps> = ({
       show={show}
       onHide={onHide}
       responsive
-      title={t('Select a dataset')}
-      hideFooter
+      title={t('Change dataset')}
+      width={confirmChange ? '432px' : ''}
+      height={confirmChange ? 'auto' : '480px'}
+      hideFooter={!confirmChange}
+      footer={
+        <>
+          {confirmChange && (
+            <ConfirmModalStyled>
+              <div className="btn-container">
+                <Button onClick={handlerCancelConfirm}>Cancel</Button>
+                <Button
+                  className="proceed-btn"
+                  buttonStyle="primary"
+                  onClick={handleChangeConfirm}
+                >
+                  Proceed
+                </Button>
+              </div>
+            </ConfirmModalStyled>
+          )}
+        </>
+      }
     >
       <>
         {!confirmChange && (
           <>
-            <Alert bsStyle="warning">
-              <strong>{t('Warning!')}</strong> {CHANGE_WARNING_MSG}
-            </Alert>
+            <Alert
+              type="warning"
+              message={
+                <>
+                  <strong>{t('Warning!')}</strong> {CHANGE_WARNING_MSG}
+                </>
+              }
+            />
             <div>
               <FormControl
                 inputRef={ref => {
@@ -247,27 +274,13 @@ const ChangeDatasourceModal: FunctionComponent<ChangeDatasourceModalProps> = ({
                 data={renderTableView()}
                 pageSize={20}
                 className="table-condensed"
+                emptyWrapperType={EmptyWrapperType.Small}
+                scrollTable
               />
             )}
           </>
         )}
-        {confirmChange && (
-          <ConfirmModalStyled>
-            <div className="confirm-modal-container">
-              {CONFIRM_WARNING_MESSAGE}
-              <div className="btn-container">
-                <Button onClick={handlerCancelConfirm}>Cancel</Button>
-                <Button
-                  className="proceed-btn"
-                  buttonStyle="primary"
-                  onClick={handleChangeConfirm}
-                >
-                  Proceed
-                </Button>
-              </div>
-            </div>
-          </ConfirmModalStyled>
-        )}
+        {confirmChange && <>{CONFIRM_WARNING_MESSAGE}</>}
       </>
     </StyledModal>
   );

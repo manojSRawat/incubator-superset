@@ -24,6 +24,7 @@ import { ReactComponent as AlertSolidSmallIcon } from 'images/icons/alert_solid_
 import { ReactComponent as BinocularsIcon } from 'images/icons/binoculars.svg';
 import { ReactComponent as BoltIcon } from 'images/icons/bolt.svg';
 import { ReactComponent as BoltSmallIcon } from 'images/icons/bolt_small.svg';
+import { ReactComponent as CrossFilterBadge } from 'images/icons/cross-filter-badge.svg';
 import { ReactComponent as BoltSmallRunIcon } from 'images/icons/bolt_small_run.svg';
 import { ReactComponent as CalendarIcon } from 'images/icons/calendar.svg';
 import { ReactComponent as CancelIcon } from 'images/icons/cancel.svg';
@@ -94,6 +95,7 @@ import { ReactComponent as JoinIcon } from 'images/icons/join.svg';
 import { ReactComponent as KeyboardIcon } from 'images/icons/keyboard.svg';
 import { ReactComponent as LayersIcon } from 'images/icons/layers.svg';
 import { ReactComponent as LightbulbIcon } from 'images/icons/lightbulb.svg';
+import { ReactComponent as LinkIcon } from 'images/icons/link.svg';
 import { ReactComponent as ListIcon } from 'images/icons/list.svg';
 import { ReactComponent as ListViewIcon } from 'images/icons/list_view.svg';
 import { ReactComponent as LocationIcon } from 'images/icons/location.svg';
@@ -122,6 +124,7 @@ import { ReactComponent as PlusSolidIcon } from 'images/icons/plus_solid.svg';
 import { ReactComponent as QueuedIcon } from 'images/icons/queued.svg';
 import { ReactComponent as RefreshIcon } from 'images/icons/refresh.svg';
 import { ReactComponent as RunningIcon } from 'images/icons/running.svg';
+import { ReactComponent as SaveIcon } from 'images/icons/save.svg';
 import { ReactComponent as SQLIcon } from 'images/icons/sql.svg';
 import { ReactComponent as SearchIcon } from 'images/icons/search.svg';
 import { ReactComponent as ServerIcon } from 'images/icons/server.svg';
@@ -163,6 +166,7 @@ export type IconName =
   | 'caret-right'
   | 'caret-up'
   | 'certified'
+  | 'cross-filter-badge'
   | 'check'
   | 'checkbox-half'
   | 'checkbox-off'
@@ -219,6 +223,7 @@ export type IconName =
   | 'join'
   | 'keyboard'
   | 'layers'
+  | 'link'
   | 'lightbulb'
   | 'list'
   | 'list-view'
@@ -248,6 +253,7 @@ export type IconName =
   | 'queued'
   | 'refresh'
   | 'running'
+  | 'save'
   | 'search'
   | 'server'
   | 'share'
@@ -277,6 +283,7 @@ export const iconsRegistry: Record<
   'alert-solid-small': AlertSolidSmallIcon,
   'bolt-small': BoltSmallIcon,
   'bolt-small-run': BoltSmallRunIcon,
+  'cross-filter-badge': CrossFilterBadge,
   'cancel-solid': CancelSolidIcon,
   'cancel-x': CancelXIcon,
   'card-view': CardViewIcon,
@@ -371,6 +378,7 @@ export const iconsRegistry: Record<
   join: JoinIcon,
   keyboard: KeyboardIcon,
   layers: LayersIcon,
+  link: LinkIcon,
   lightbulb: LightbulbIcon,
   list: ListIcon,
   location: LocationIcon,
@@ -386,6 +394,7 @@ export const iconsRegistry: Record<
   queued: QueuedIcon,
   refresh: RefreshIcon,
   running: RunningIcon,
+  save: SaveIcon,
   search: SearchIcon,
   server: ServerIcon,
   share: ShareIcon,
@@ -399,7 +408,7 @@ export const iconsRegistry: Record<
   warning: WarningIcon,
 };
 
-interface IconProps extends SVGProps<SVGSVGElement> {
+export interface IconProps extends SVGProps<SVGSVGElement> {
   name: IconName;
 }
 

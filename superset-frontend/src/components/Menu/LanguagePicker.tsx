@@ -43,6 +43,7 @@ export default function LanguagePicker({
     <NavDropdown
       onMouseEnter={() => setDropdownOpen(true)}
       onMouseLeave={() => setDropdownOpen(false)}
+      onToggle={value => setDropdownOpen(value)}
       open={dropdownOpen}
       id="locale-dropdown"
       title={
@@ -50,6 +51,7 @@ export default function LanguagePicker({
           <i className={`flag ${languages[locale].flag}`} />
         </span>
       }
+      data-test="language-picker"
     >
       <Menu
         onSelect={({ key }) => {

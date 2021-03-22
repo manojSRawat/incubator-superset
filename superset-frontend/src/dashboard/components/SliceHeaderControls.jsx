@@ -19,12 +19,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { styled, t } from '@superset-ui/core';
+import {
+  Behavior,
+  getChartMetadataRegistry,
+  styled,
+  t,
+} from '@superset-ui/core';
 import { Menu, NoAnimationDropdown } from 'src/common/components';
-import URLShortLinkModal from '../../components/URLShortLinkModal';
+import ShareMenuItems from 'src/dashboard/components/menu/ShareMenuItems';
 import downloadAsImage from '../../utils/downloadAsImage';
 import getDashboardUrl from '../util/getDashboardUrl';
 import { getActiveFilters } from '../util/activeDashboardFilters';
+import { FeatureFlag, isFeatureEnabled } from '../../featureFlags';
+import CrossFilterScopingModal from './CrossFilterScopingModal/CrossFilterScopingModal';
 
 const propTypes = {
   slice: PropTypes.object.isRequired,
@@ -59,6 +66,7 @@ const defaultProps = {
 };
 
 const MENU_KEYS = {
+  CROSS_FILTER_SCOPING: 'cross_filter_scoping',
   FORCE_REFRESH: 'force_refresh',
   TOGGLE_CHART_DESCRIPTION: 'toggle_chart_description',
   EXPLORE_CHART: 'explore_chart',
@@ -111,6 +119,7 @@ class SliceHeaderControls extends React.PureComponent {
 
     this.state = {
       showControls: false,
+      showCrossFilterScopingModal: false,
     };
   }
 
@@ -133,6 +142,9 @@ class SliceHeaderControls extends React.PureComponent {
     switch (key) {
       case MENU_KEYS.FORCE_REFRESH:
         this.refreshChart();
+        break;
+      case MENU_KEYS.CROSS_FILTER_SCOPING:
+        this.setState({ showCrossFilterScopingModal: true });
         break;
       case MENU_KEYS.TOGGLE_CHART_DESCRIPTION:
         this.props.toggleExpandSlice(this.props.slice.slice_id);
@@ -173,29 +185,42 @@ class SliceHeaderControls extends React.PureComponent {
       cachedDttm,
       updatedDttm,
       componentId,
+      addSuccessToast,
       addDangerToast,
       isFullSize,
     } = this.props;
+    const crossFilterItems = getChartMetadataRegistry().items;
+    const isCrossFilter = Object.entries(crossFilterItems)
+      // @ts-ignore
+      .filter(([, { value }]) =>
+        value.behaviors?.includes(Behavior.CROSS_FILTER),
+      )
+      .find(([key]) => key === slice.viz_type);
+
     const cachedWhen = cachedDttm.map(itemCachedDttm =>
       moment.utc(itemCachedDttm).fromNow(),
     );
     const updatedWhen = updatedDttm ? moment.utc(updatedDttm).fromNow() : '';
     const getCachedTitle = itemCached => {
-      return itemCached
-        ? t('Cached %s', cachedWhen)
-        : updatedWhen && t('Fetched %s', updatedWhen);
+      if (itemCached) {
+        return t('Cached %s', cachedWhen);
+      }
+      if (updatedWhen) {
+        return t('Fetched %s', updatedWhen);
+      }
+      return '';
     };
     const refreshTooltipData = isCached.map(getCachedTitle) || '';
     // If all queries have same cache time we can unit them to one
     let refreshTooltip = [...new Set(refreshTooltipData)];
     refreshTooltip = refreshTooltip.map((item, index) => (
-      <div>
+      <div key={`tooltip-${index}`}>
         {refreshTooltip.length > 1
           ? `${t('Query')} ${index + 1}: ${item}`
           : item}
       </div>
     ));
-    const resizeLabel = isFullSize ? t('Minimize Chart') : t('Maximize Chart');
+    const resizeLabel = isFullSize ? t('Minimize chart') : t('Maximize chart');
     const menu = (
       <Menu
         onClick={this.handleMenuClick}
@@ -224,24 +249,22 @@ class SliceHeaderControls extends React.PureComponent {
 
         {this.props.supersetCanExplore && (
           <Menu.Item key={MENU_KEYS.EXPLORE_CHART}>
-            {t('View Chart in Explore')}
+            {t('View chart in Explore')}
           </Menu.Item>
         )}
 
-        {this.props.supersetCanExplore && (
-          <Menu.Item key={MENU_KEYS.SHARE_CHART}>
-            <URLShortLinkModal
-              url={getDashboardUrl(
-                window.location.pathname,
-                getActiveFilters(),
-                componentId,
-              )}
-              addDangerToast={addDangerToast}
-              title={t('Share chart')}
-              triggerNode={<span>{t('Share chart')}</span>}
-            />
-          </Menu.Item>
-        )}
+        <ShareMenuItems
+          url={getDashboardUrl(
+            window.location.pathname,
+            getActiveFilters(),
+            componentId,
+          )}
+          copyMenuItemTitle={t('Copy chart URL')}
+          emailMenuItemTitle={t('Share chart by email')}
+          emailSubject={t('Superset chart')}
+          addSuccessToast={addSuccessToast}
+          addDangerToast={addDangerToast}
+        />
 
         <Menu.Item key={MENU_KEYS.RESIZE_LABEL}>{resizeLabel}</Menu.Item>
 
@@ -252,25 +275,38 @@ class SliceHeaderControls extends React.PureComponent {
         {this.props.supersetCanCSV && (
           <Menu.Item key={MENU_KEYS.EXPORT_CSV}>{t('Export CSV')}</Menu.Item>
         )}
+        {isFeatureEnabled(FeatureFlag.DASHBOARD_CROSS_FILTERS) &&
+          isCrossFilter && (
+            <Menu.Item key={MENU_KEYS.CROSS_FILTER_SCOPING}>
+              {t('Cross-filter scoping')}
+            </Menu.Item>
+          )}
       </Menu>
     );
 
     return (
-      <NoAnimationDropdown
-        overlay={menu}
-        trigger={['click']}
-        placement="bottomRight"
-        dropdownAlign={{
-          offset: [-40, 4],
-        }}
-        getPopupContainer={triggerNode =>
-          triggerNode.closest(SCREENSHOT_NODE_SELECTOR)
-        }
-      >
-        <span id={`slice_${slice.slice_id}-controls`} role="button">
-          <VerticalDotsTrigger />
-        </span>
-      </NoAnimationDropdown>
+      <>
+        <CrossFilterScopingModal
+          chartId={slice.slice_id}
+          isOpen={this.state.showCrossFilterScopingModal}
+          onClose={() => this.setState({ showCrossFilterScopingModal: false })}
+        />
+        <NoAnimationDropdown
+          overlay={menu}
+          trigger={['click']}
+          placement="bottomRight"
+          dropdownAlign={{
+            offset: [-40, 4],
+          }}
+          getPopupContainer={triggerNode =>
+            triggerNode.closest(SCREENSHOT_NODE_SELECTOR)
+          }
+        >
+          <span id={`slice_${slice.slice_id}-controls`} role="button">
+            <VerticalDotsTrigger />
+          </span>
+        </NoAnimationDropdown>
+      </>
     );
   }
 }

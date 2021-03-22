@@ -15,6 +15,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import json
 import logging
 import sys
 from datetime import datetime, timedelta
@@ -26,7 +27,7 @@ import click
 import yaml
 from celery.utils.abstract import CallableTask
 from colorama import Fore, Style
-from flask import g
+from flask import current_app, g
 from flask.cli import FlaskGroup, with_appcontext
 from flask_appbuilder import Model
 from pathlib2 import Path
@@ -108,7 +109,10 @@ def version(verbose: bool) -> None:
 
 
 def load_examples_run(
-    load_test_data: bool, only_metadata: bool = False, force: bool = False
+    load_test_data: bool = False,
+    load_big_data: bool = False,
+    only_metadata: bool = False,
+    force: bool = False,
 ) -> None:
     if only_metadata:
         print("Loading examples metadata")
@@ -128,6 +132,9 @@ def load_examples_run(
 
     print("Loading [Birth names]")
     examples.load_birth_names(only_metadata, force)
+
+    print("Loading [Tabbed dashboard]")
+    examples.load_tabbed_dashboard(only_metadata)
 
     if not load_test_data:
         print("Loading [Random time series data]")
@@ -163,16 +170,18 @@ def load_examples_run(
         print("Loading DECK.gl demo")
         examples.load_deck_dash()
 
-    print("Loading [Tabbed dashboard]")
-    examples.load_tabbed_dashboard(only_metadata)
+    if load_big_data:
+        print("Loading big synthetic data for tests")
+        examples.load_big_data()
 
     # load examples that are stored as YAML config files
-    examples.load_from_configs()
+    examples.load_from_configs(force, load_test_data)
 
 
 @with_appcontext
 @superset.command()
 @click.option("--load-test-data", "-t", is_flag=True, help="Load additional test data")
+@click.option("--load-big-data", "-b", is_flag=True, help="Load additional big data")
 @click.option(
     "--only-metadata", "-m", is_flag=True, help="Only load metadata, skip actual data"
 )
@@ -180,19 +189,29 @@ def load_examples_run(
     "--force", "-f", is_flag=True, help="Force load data even if table already exists"
 )
 def load_examples(
-    load_test_data: bool, only_metadata: bool = False, force: bool = False
+    load_test_data: bool,
+    load_big_data: bool,
+    only_metadata: bool = False,
+    force: bool = False,
 ) -> None:
     """Loads a set of Slices and Dashboards and a supporting dataset """
-    load_examples_run(load_test_data, only_metadata, force)
+    load_examples_run(load_test_data, load_big_data, only_metadata, force)
 
 
 @with_appcontext
 @superset.command()
 @click.option("--database_name", "-d", help="Database name to change")
 @click.option("--uri", "-u", help="Database URI to change")
-def set_database_uri(database_name: str, uri: str) -> None:
+@click.option(
+    "--skip_create",
+    "-s",
+    is_flag=True,
+    default=False,
+    help="Create the DB if it doesn't exist",
+)
+def set_database_uri(database_name: str, uri: str, skip_create: bool) -> None:
     """Updates a database connection URI """
-    utils.get_or_create_db(database_name, uri)
+    utils.get_or_create_db(database_name, uri, not skip_create)
 
 
 @superset.command()
@@ -784,3 +803,39 @@ def alert() -> None:
             resolution=6000,
             session=session,
         )
+
+
+@superset.command()
+@with_appcontext
+def update_api_docs() -> None:
+    """Regenerate the openapi.json file in docs"""
+    from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
+    from flask_appbuilder.api import BaseApi
+    from os import path
+
+    superset_dir = path.abspath(path.dirname(__file__))
+    openapi_json = path.join(
+        superset_dir, "..", "docs", "src", "resources", "openapi.json"
+    )
+    api_version = "v1"
+
+    version_found = False
+    api_spec = APISpec(
+        title=current_app.appbuilder.app_name,
+        version=api_version,
+        openapi_version="3.0.2",
+        info=dict(description=current_app.appbuilder.app_name),
+        plugins=[MarshmallowPlugin()],
+        servers=[{"url": "/api/{}".format(api_version)}],
+    )
+    for base_api in current_app.appbuilder.baseviews:
+        if isinstance(base_api, BaseApi) and base_api.version == api_version:
+            base_api.add_api_spec(api_spec)
+            version_found = True
+    if version_found:
+        click.secho("Generating openapi.json", fg="green")
+        with open(openapi_json, "w") as outfile:
+            json.dump(api_spec.to_dict(), outfile, sort_keys=True, indent=2)
+    else:
+        click.secho("API version not found", err=True)

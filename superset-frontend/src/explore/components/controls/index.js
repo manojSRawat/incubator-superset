@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { sharedControlComponents } from '@superset-ui/chart-controls';
 import AnnotationLayerControl from './AnnotationLayerControl';
 import BoundsControl from './BoundsControl';
 import CheckboxControl from './CheckboxControl';
@@ -24,7 +25,7 @@ import ColorMapControl from './ColorMapControl';
 import ColorPickerControl from './ColorPickerControl';
 import ColorSchemeControl from './ColorSchemeControl';
 import DatasourceControl from './DatasourceControl';
-import DateFilterControl from './DateFilterControl/DateFilterControl';
+import DateFilterControl from './DateFilterControl';
 import FixedOrMetricControl from './FixedOrMetricControl';
 import HiddenControl from './HiddenControl';
 import SelectAsyncControl from './SelectAsyncControl';
@@ -36,9 +37,14 @@ import TextControl from './TextControl';
 import TimeSeriesColumnControl from './TimeSeriesColumnControl';
 import ViewportControl from './ViewportControl';
 import VizTypeControl from './VizTypeControl';
-import MetricsControl from './MetricsControl';
-import AdhocFilterControl from './AdhocFilterControl';
+import MetricsControl from './MetricControl/MetricsControl';
+import AdhocFilterControl from './FilterControl/AdhocFilterControl';
 import FilterBoxItemControl from './FilterBoxItemControl';
+import DndColumnSelectControl, {
+  DndColumnSelect,
+  DndFilterSelect,
+  DndMetricSelect,
+} from './DndColumnSelectControl';
 import ConditionalTableFilterBox from './ConditionalTableFilterBox';
 import ConditionalTableParentHeaderBox from './ConditionalTableParentHeaderBox';
 
@@ -52,6 +58,10 @@ const controlMap = {
   ColorSchemeControl,
   DatasourceControl,
   DateFilterControl,
+  DndColumnSelectControl,
+  DndColumnSelect,
+  DndFilterSelect,
+  DndMetricSelect,
   FixedOrMetricControl,
   HiddenControl,
   SelectAsyncControl,
@@ -66,6 +76,7 @@ const controlMap = {
   MetricsControl,
   AdhocFilterControl,
   FilterBoxItemControl,
+  ...sharedControlComponents,
   ConditionalTableFilterBox,
   ConditionalTableParentHeaderBox
 };

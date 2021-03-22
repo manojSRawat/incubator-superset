@@ -16,7 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { SupersetClient, getChartMetadataRegistry, t } from '@superset-ui/core';
+import {
+  SupersetClient,
+  getChartMetadataRegistry,
+  t,
+  styled,
+} from '@superset-ui/core';
 import React, { useMemo, useState } from 'react';
 import rison from 'rison';
 import { uniqBy } from 'lodash';
@@ -34,7 +39,6 @@ import {
 } from 'src/views/CRUD/hooks';
 import ConfirmStatusChange from 'src/components/ConfirmStatusChange';
 import SubMenu, { SubMenuProps } from 'src/components/Menu/SubMenu';
-import Icon from 'src/components/Icon';
 import FaveStar from 'src/components/FaveStar';
 import ListView, {
   ListViewProps,
@@ -46,7 +50,8 @@ import withToasts from 'src/messageToasts/enhancers/withToasts';
 import PropertiesModal from 'src/explore/components/PropertiesModal';
 import ImportModelsModal from 'src/components/ImportModal/index';
 import Chart from 'src/types/Chart';
-import TooltipWrapper from 'src/components/TooltipWrapper';
+import { Tooltip } from 'src/common/components/Tooltip';
+import Icons from 'src/components/Icons';
 import ChartCard from './ChartCard';
 
 const PAGE_SIZE = 25;
@@ -110,6 +115,10 @@ interface ChartListProps {
     userId: string | number;
   };
 }
+
+const Actions = styled.div`
+  color: ${({ theme }) => theme.colors.grayscale.base};
+`;
 
 function ChartList(props: ChartListProps) {
   const { addDangerToast, addSuccessToast } = props;
@@ -207,7 +216,11 @@ function ChartList(props: ChartListProps) {
           row: {
             original: { url, slice_name: sliceName },
           },
-        }: any) => <a href={url}>{sliceName}</a>,
+        }: any) => (
+          <a href={url} data-test={`${sliceName}-list-chart-title`}>
+            {sliceName}
+          </a>
+        ),
         Header: t('Chart'),
         accessor: 'slice_name',
       },
@@ -217,7 +230,7 @@ function ChartList(props: ChartListProps) {
             original: { viz_type: vizType },
           },
         }: any) => registry.get(vizType)?.name || vizType,
-        Header: t('Visualization Type'),
+        Header: t('Visualization type'),
         accessor: 'viz_type',
         size: 'xxl',
       },
@@ -244,7 +257,7 @@ function ChartList(props: ChartListProps) {
             },
           },
         }: any) => <a href={changedByUrl}>{changedByName}</a>,
-        Header: t('Modified By'),
+        Header: t('Modified by'),
         accessor: 'changed_by.first_name',
         size: 'xl',
       },
@@ -254,7 +267,7 @@ function ChartList(props: ChartListProps) {
             original: { changed_on_delta_humanized: changedOn },
           },
         }: any) => <span className="no-wrap">{changedOn}</span>,
-        Header: t('Last Modified'),
+        Header: t('Last modified'),
         accessor: 'changed_on_delta_humanized',
         size: 'xl',
       },
@@ -270,7 +283,7 @@ function ChartList(props: ChartListProps) {
           },
         }: any) =>
           createdBy ? `${createdBy.first_name} ${createdBy.last_name}` : '',
-        Header: t('Created By'),
+        Header: t('Created by'),
         accessor: 'created_by',
         disableSortBy: true,
         size: 'xl',
@@ -291,10 +304,10 @@ function ChartList(props: ChartListProps) {
           }
 
           return (
-            <span className="actions">
+            <Actions className="actions">
               {canDelete && (
                 <ConfirmStatusChange
-                  title={t('Please Confirm')}
+                  title={t('Please confirm')}
                   description={
                     <>
                       {t('Are you sure you want to delete')}{' '}
@@ -304,27 +317,28 @@ function ChartList(props: ChartListProps) {
                   onConfirm={handleDelete}
                 >
                   {confirmDelete => (
-                    <TooltipWrapper
-                      label="delete-action"
-                      tooltip={t('Delete')}
+                    <Tooltip
+                      id="delete-action-tooltip"
+                      title={t('Delete')}
                       placement="bottom"
                     >
                       <span
+                        data-test="trash"
                         role="button"
                         tabIndex={0}
                         className="action-button"
                         onClick={confirmDelete}
                       >
-                        <Icon name="trash" />
+                        <Icons.Trash />
                       </span>
-                    </TooltipWrapper>
+                    </Tooltip>
                   )}
                 </ConfirmStatusChange>
               )}
               {canExport && (
-                <TooltipWrapper
-                  label="export-action"
-                  tooltip={t('Export')}
+                <Tooltip
+                  id="export-action-tooltip"
+                  title={t('Export')}
                   placement="bottom"
                 >
                   <span
@@ -333,14 +347,14 @@ function ChartList(props: ChartListProps) {
                     className="action-button"
                     onClick={handleExport}
                   >
-                    <Icon name="share" />
+                    <Icons.Share />
                   </span>
-                </TooltipWrapper>
+                </Tooltip>
               )}
               {canEdit && (
-                <TooltipWrapper
-                  label="edit-action"
-                  tooltip={t('Edit')}
+                <Tooltip
+                  id="edit-action-tooltip"
+                  title={t('Edit')}
                   placement="bottom"
                 >
                   <span
@@ -349,11 +363,11 @@ function ChartList(props: ChartListProps) {
                     className="action-button"
                     onClick={openEditModal}
                   >
-                    <Icon name="edit-alt" />
+                    <Icons.EditAlt data-test="edit-alt" />
                   </span>
-                </TooltipWrapper>
+                </Tooltip>
               )}
-            </span>
+            </Actions>
           );
         },
         Header: t('Actions'),
@@ -371,7 +385,7 @@ function ChartList(props: ChartListProps) {
       id: 'owners',
       input: 'select',
       operator: FilterOperators.relationManyMany,
-      unfilteredLabel: 'All',
+      unfilteredLabel: t('All'),
       fetchSelects: createFetchRelated(
         'chart',
         'owners',
@@ -388,11 +402,11 @@ function ChartList(props: ChartListProps) {
       paginate: true,
     },
     {
-      Header: t('Created By'),
+      Header: t('Created by'),
       id: 'created_by',
       input: 'select',
       operator: FilterOperators.relationOneMany,
-      unfilteredLabel: 'All',
+      unfilteredLabel: t('All'),
       fetchSelects: createFetchRelated(
         'chart',
         'created_by',
@@ -409,11 +423,11 @@ function ChartList(props: ChartListProps) {
       paginate: true,
     },
     {
-      Header: t('Viz Type'),
+      Header: t('Viz type'),
       id: 'viz_type',
       input: 'select',
       operator: FilterOperators.equals,
-      unfilteredLabel: 'All',
+      unfilteredLabel: t('All'),
       selects: registry
         .keys()
         .map(k => ({ label: registry.get(k)?.name || k, value: k }))
@@ -437,7 +451,7 @@ function ChartList(props: ChartListProps) {
       id: 'datasource_id',
       input: 'select',
       operator: FilterOperators.equals,
-      unfilteredLabel: 'All',
+      unfilteredLabel: t('All'),
       fetchSelects: createFetchDatasets(
         createErrorHandler(errMsg =>
           addDangerToast(
@@ -456,7 +470,7 @@ function ChartList(props: ChartListProps) {
       urlDisplay: 'favorite',
       input: 'select',
       operator: FilterOperators.chartIsFav,
-      unfilteredLabel: 'Any',
+      unfilteredLabel: t('Any'),
       selects: [
         { label: t('Yes'), value: true },
         { label: t('No'), value: false },
@@ -474,19 +488,19 @@ function ChartList(props: ChartListProps) {
     {
       desc: false,
       id: 'slice_name',
-      label: 'Alphabetical',
+      label: t('Alphabetical'),
       value: 'alphabetical',
     },
     {
       desc: true,
       id: 'changed_on_delta_humanized',
-      label: 'Recently Modified',
+      label: t('Recently modified'),
       value: 'recently_modified',
     },
     {
       desc: false,
       id: 'changed_on_delta_humanized',
-      label: 'Least Recently Modified',
+      label: t('Least recently modified'),
       value: 'least_recently_modified',
     },
   ];
@@ -510,8 +524,9 @@ function ChartList(props: ChartListProps) {
   const subMenuButtons: SubMenuProps['buttons'] = [];
   if (canDelete || canExport) {
     subMenuButtons.push({
-      name: t('Bulk Select'),
+      name: t('Bulk select'),
       buttonStyle: 'secondary',
+      'data-test': 'bulk-select',
       onClick: toggleBulkSelect,
     });
   }
@@ -530,7 +545,7 @@ function ChartList(props: ChartListProps) {
   }
   if (isFeatureEnabled(FeatureFlag.VERSIONED_EXPORT)) {
     subMenuButtons.push({
-      name: <Icon name="import" />,
+      name: <Icons.Import />,
       buttonStyle: 'link',
       onClick: openChartImportModal,
     });

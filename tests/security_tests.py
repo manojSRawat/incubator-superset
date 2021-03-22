@@ -15,19 +15,19 @@
 # specific language governing permissions and limitations
 # under the License.
 # isort:skip_file
-import datetime
 import inspect
 import re
 import unittest
-from unittest.mock import Mock, patch
 
-import pandas as pd
+from unittest.mock import Mock, patch
+from typing import Any, Dict
+
 import prison
 import pytest
-import random
 
 from flask import current_app, g
-from sqlalchemy import Float, Date, String
+
+from superset.models.dashboard import Dashboard
 
 from superset import app, appbuilder, db, security_manager, viz, ConnectorRegistry
 from superset.connectors.druid.models import DruidCluster, DruidDatasource
@@ -40,13 +40,14 @@ from superset.sql_parse import Table
 from superset.utils.core import get_example_database
 
 from .base_tests import SupersetTestCase
-from .dashboard_utils import (
-    create_table_for_dashboard,
-    create_slice,
-    create_dashboard,
+from tests.fixtures.birth_names_dashboard import load_birth_names_dashboard_with_slices
+from tests.fixtures.energy_dashboard import load_energy_table_with_slice
+from tests.fixtures.public_role import (
+    public_role_like_gamma,
+    public_role_like_test_role,
 )
-from .fixtures.energy_dashboard import load_energy_table_with_slice
-from .fixtures.unicode_dashboard import load_unicode_dashboard_with_slice
+from tests.fixtures.unicode_dashboard import load_unicode_dashboard_with_slice
+from tests.fixtures.world_bank_dashboard import load_world_bank_dashboard_with_slices
 
 NEW_SECURITY_CONVERGE_VIEWS = (
     "Annotation",
@@ -259,7 +260,9 @@ class TestRolePermission(SupersetTestCase):
         session.delete(stored_table)
         session.commit()
 
+    @pytest.mark.usefixtures("load_world_bank_dashboard_with_slices")
     def test_set_perm_druid_datasource(self):
+        self.create_druid_test_objects()
         session = db.session
         druid_cluster = (
             session.query(DruidCluster).filter_by(cluster_name="druid_test").one()
@@ -532,7 +535,12 @@ class TestRolePermission(SupersetTestCase):
         self.assertIsNotNone(vm)
         delete_schema_perm("[examples].[2]")
 
+    @pytest.mark.usefixtures("load_world_bank_dashboard_with_slices")
     def test_gamma_user_schema_access_to_dashboards(self):
+        dash = db.session.query(Dashboard).filter_by(slug="world_health").first()
+        dash.published = True
+        db.session.commit()
+
         self.login(username="gamma")
         data = str(self.client.get("api/v1/dashboard/").data)
         self.assertIn("/superset/dashboard/world_health/", data)
@@ -544,6 +552,7 @@ class TestRolePermission(SupersetTestCase):
         self.assertIn("wb_health_population", data)
         self.assertNotIn("birth_names", data)
 
+    @pytest.mark.usefixtures("load_world_bank_dashboard_with_slices")
     def test_gamma_user_schema_access_to_charts(self):
         self.login(username="gamma")
         data = str(self.client.get("api/v1/chart/").data)
@@ -555,6 +564,7 @@ class TestRolePermission(SupersetTestCase):
         )  # wb_health_population slice, has access
         self.assertNotIn("Girl Name Cloud", data)  # birth_names slice, no access
 
+    @pytest.mark.usefixtures("public_role_like_gamma")
     def test_public_sync_role_data_perms(self):
         """
         Security: Tests if the sync role method preserves data access permissions
@@ -582,13 +592,11 @@ class TestRolePermission(SupersetTestCase):
         # Cleanup
         self.revoke_public_access_to_table(table)
 
+    @pytest.mark.usefixtures("public_role_like_test_role")
     def test_public_sync_role_builtin_perms(self):
         """
         Security: Tests public role creation based on a builtin role
         """
-        current_app.config["PUBLIC_ROLE_LIKE"] = "TestRole"
-
-        security_manager.sync_role_definitions()
         public_role = security_manager.get_public_role()
         public_role_resource_names = [
             [permission.view_menu.name, permission.permission.name]
@@ -596,10 +604,6 @@ class TestRolePermission(SupersetTestCase):
         ]
         for pvm in current_app.config["FAB_ROLES"]["TestRole"]:
             assert pvm in public_role_resource_names
-
-        # Cleanup
-        current_app.config["PUBLIC_ROLE_LIKE"] = "Gamma"
-        security_manager.sync_role_definitions()
 
     def test_sqllab_gamma_user_schema_access_to_sqllab(self):
         session = db.session
@@ -803,6 +807,7 @@ class TestRolePermission(SupersetTestCase):
         self.assert_can_gamma(get_perm_tuples("Gamma"))
         self.assert_cannot_alpha(get_perm_tuples("Gamma"))
 
+    @pytest.mark.usefixtures("public_role_like_gamma")
     def test_public_permissions_basic(self):
         self.assert_can_gamma(get_perm_tuples("Public"))
 
@@ -818,6 +823,7 @@ class TestRolePermission(SupersetTestCase):
     @unittest.skipUnless(
         SupersetTestCase.is_module_installed("pydruid"), "pydruid not installed"
     )
+    @pytest.mark.usefixtures("load_world_bank_dashboard_with_slices")
     def test_admin_permissions(self):
         self.assert_can_gamma(get_perm_tuples("Admin"))
         self.assert_can_alpha(get_perm_tuples("Admin"))
@@ -1024,9 +1030,9 @@ class TestRowLevelSecurity(SupersetTestCase):
     """
 
     rls_entry = None
-    query_obj = dict(
+    query_obj: Dict[str, Any] = dict(
         groupby=[],
-        metrics=[],
+        metrics=None,
         filter=[],
         is_timeseries=False,
         columns=["value"],
@@ -1148,6 +1154,7 @@ class TestRowLevelSecurity(SupersetTestCase):
         assert tbl.get_extra_cache_keys(self.query_obj) == [1]
         assert "value > 1" in sql
 
+    @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_rls_filter_alters_gamma_birth_names_query(self):
         g.user = self.get_user(username="gamma")
         tbl = self.get_table_by_name("birth_names")
@@ -1160,6 +1167,7 @@ class TestRowLevelSecurity(SupersetTestCase):
             in sql
         )
 
+    @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_rls_filter_alters_no_role_user_birth_names_query(self):
         g.user = self.get_user(username="NoRlsRoleUser")
         tbl = self.get_table_by_name("birth_names")
@@ -1172,6 +1180,7 @@ class TestRowLevelSecurity(SupersetTestCase):
         # base query should be present
         assert self.BASE_FILTER_REGEX.search(sql)
 
+    @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_rls_filter_doesnt_alter_admin_birth_names_query(self):
         g.user = self.get_user(username="admin")
         tbl = self.get_table_by_name("birth_names")

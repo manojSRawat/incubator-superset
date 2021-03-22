@@ -41,6 +41,7 @@ import { logEvent } from '../logger/actions';
 import { Logger, LOG_ACTIONS_LOAD_CHART } from '../logger/LogUtils';
 import { getClientErrorObject } from '../utils/getClientErrorObject';
 import { allowCrossDomain as domainShardingEnabled } from '../utils/hostNamesConfig';
+import { updateDataMask } from '../dataMask/actions';
 
 export const CHART_UPDATE_STARTED = 'CHART_UPDATE_STARTED';
 export function chartUpdateStarted(queryController, latestQueryFormData, key) {
@@ -148,13 +149,13 @@ const legacyChartDataRequest = async (
     'GET' && isFeatureEnabled(FeatureFlag.CLIENT_CACHE)
       ? SupersetClient.get
       : SupersetClient.post;
-  return clientMethod(querySettings).then(({ json }) => {
+  return clientMethod(querySettings).then(({ json }) =>
     // Make the legacy endpoint return a payload that corresponds to the
     // V1 chart data endpoint response signature.
-    return {
+    ({
       result: [json],
-    };
-  });
+    }),
+  );
 };
 
 const v1ChartDataRequest = async (
@@ -163,12 +164,14 @@ const v1ChartDataRequest = async (
   resultType,
   force,
   requestParams,
+  setDataMask,
 ) => {
   const payload = buildV1ChartDataPayload({
     formData,
     resultType,
     resultFormat,
     force,
+    setDataMask,
   });
 
   // The dashboard id is added to query params for tracking purposes
@@ -195,13 +198,12 @@ const v1ChartDataRequest = async (
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   };
-  return SupersetClient.post(querySettings).then(({ json }) => {
-    return json;
-  });
+  return SupersetClient.post(querySettings).then(({ json }) => json);
 };
 
 export async function getChartDataRequest({
   formData,
+  setDataMask = () => {},
   resultFormat = 'json',
   resultType = 'full',
   force = false,
@@ -236,6 +238,7 @@ export async function getChartDataRequest({
     resultType,
     force,
     querySettings,
+    setDataMask,
   );
 }
 
@@ -303,7 +306,7 @@ export function runAnnotationQuery(
             dispatch(
               annotationQueryFailed(
                 annotation,
-                { error: 'Query Timeout' },
+                { error: 'Query timeout' },
                 sliceKey,
               ),
             );
@@ -363,7 +366,11 @@ export function exploreJSON(
     };
     if (dashboardId) requestParams.dashboard_id = dashboardId;
 
+    const setDataMask = dataMask => {
+      dispatch(updateDataMask(formData.slice_id, dataMask));
+    };
     const chartDataRequest = getChartDataRequest({
+      setDataMask,
       formData,
       resultFormat: 'json',
       resultType: 'full',
@@ -496,7 +503,7 @@ export function redirectSQLLab(formData) {
   return dispatch => {
     getChartDataRequest({ formData, resultFormat: 'json', resultType: 'query' })
       .then(({ result }) => {
-        const redirectUrl = '/superset/sqllab';
+        const redirectUrl = '/superset/sqllab/';
         const payload = {
           datasourceKey: formData.datasource,
           sql: result[0].query,

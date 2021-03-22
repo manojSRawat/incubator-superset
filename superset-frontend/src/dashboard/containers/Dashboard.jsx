@@ -28,12 +28,14 @@ import {
 import { triggerQuery } from '../../chart/chartAction';
 import { logEvent } from '../../logger/actions';
 import { getActiveFilters } from '../util/activeDashboardFilters';
+import { getAllActiveFilters } from '../util/activeAllDashboardFilters';
 
 function mapStateToProps(state) {
   const {
     datasources,
     sliceEntities,
     charts,
+    dataMask,
     dashboardInfo,
     dashboardState,
     dashboardLayout,
@@ -54,10 +56,19 @@ function mapStateToProps(state) {
     // When dashboard is first loaded into browser,
     // its value is from preselect_filters that dashboard owner saved in dashboard's meta data
     // When user start interacting with dashboard, it will be user picked values from all filter_box
-    activeFilters: getActiveFilters(),
+    activeFilters: {
+      ...getActiveFilters(),
+      ...getAllActiveFilters({
+        // eslint-disable-next-line camelcase
+        chartConfiguration: dashboardInfo.metadata?.chart_configuration,
+        nativeFilters: nativeFilters.filters,
+        dataMask,
+        layout: dashboardLayout.present,
+      }),
+    },
+    ownDataCharts: dataMask.ownFilters ?? {},
     slices: sliceEntities.slices,
     layout: dashboardLayout.present,
-    nativeFilters,
     impressionId,
   };
 }

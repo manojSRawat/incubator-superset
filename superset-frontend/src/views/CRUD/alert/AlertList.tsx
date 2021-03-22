@@ -17,14 +17,13 @@
  * under the License.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { t, SupersetClient, makeApi, styled } from '@superset-ui/core';
 import moment from 'moment';
 import ActionsBar, { ActionProps } from 'src/components/ListView/ActionsBar';
 import Button from 'src/components/Button';
 import FacePile from 'src/components/FacePile';
-import { IconName } from 'src/components/Icon';
 import { Tooltip } from 'src/common/components/Tooltip';
 import ListView, {
   FilterOperators,
@@ -137,6 +136,12 @@ function AlertList({
   const canDelete = hasPerm('can_write');
   const canCreate = hasPerm('can_write');
 
+  useEffect(() => {
+    if (bulkSelectEnabled && canDelete) {
+      toggleBulkSelect();
+    }
+  }, [isReportEnabled]);
+
   const handleAlertDelete = ({ id, name }: AlertObject) => {
     SupersetClient.delete({
       endpoint: `/api/v1/report/${id}`,
@@ -205,13 +210,12 @@ function AlertList({
           row: {
             original: { last_eval_dttm: lastEvalDttm },
           },
-        }: any) => {
-          return lastEvalDttm
+        }: any) =>
+          lastEvalDttm
             ? moment.utc(lastEvalDttm).local().format(DATETIME_WITH_TIME_ZONE)
-            : '';
-        },
+            : '',
         accessor: 'last_eval_dttm',
-        Header: t('Last Run'),
+        Header: t('Last run'),
         size: 'lg',
       },
       {
@@ -243,7 +247,7 @@ function AlertList({
             <RecipientIcon key={r.id} type={r.type} />
           )),
         accessor: 'recipients',
-        Header: t('Notification Method'),
+        Header: t('Notification method'),
         disableSortBy: true,
         size: 'xl',
       },
@@ -290,9 +294,9 @@ function AlertList({
             canEdit
               ? {
                   label: 'execution-log-action',
-                  tooltip: t('Execution Log'),
+                  tooltip: t('Execution log'),
                   placement: 'bottom',
-                  icon: 'note' as IconName,
+                  icon: 'Note',
                   onClick: handleGotoExecutionLog,
                 }
               : null,
@@ -301,7 +305,7 @@ function AlertList({
                   label: 'edit-action',
                   tooltip: t('Edit'),
                   placement: 'bottom',
-                  icon: 'edit' as IconName,
+                  icon: 'Edit',
                   onClick: handleEdit,
                 }
               : null,
@@ -310,7 +314,7 @@ function AlertList({
                   label: 'delete-action',
                   tooltip: t('Delete'),
                   placement: 'bottom',
-                  icon: 'trash' as IconName,
+                  icon: 'Trash',
                   onClick: handleDelete,
                 }
               : null,
@@ -345,7 +349,7 @@ function AlertList({
   }
   if (canDelete) {
     subMenuButtons.push({
-      name: t('Bulk Select'),
+      name: t('Bulk select'),
       onClick: toggleBulkSelect,
       buttonStyle: 'secondary',
       'data-test': 'bulk-select-toggle',
@@ -366,7 +370,7 @@ function AlertList({
   const filters: Filters = useMemo(
     () => [
       {
-        Header: t('Created By'),
+        Header: t('Created by'),
         id: 'created_by',
         input: 'select',
         operator: FilterOperators.relationOneMany,
@@ -409,19 +413,21 @@ function AlertList({
     <>
       <SubMenu
         activeChild={pathName}
-        name={t('Alerts & Reports')}
+        name={t('Alerts & reports')}
         tabs={[
           {
             name: 'Alerts',
             label: t('Alerts'),
             url: '/alert/list/',
             usesRouter: true,
+            'data-test': 'alert-list',
           },
           {
             name: 'Reports',
             label: t('Reports'),
             url: '/report/list/',
             usesRouter: true,
+            'data-test': 'report-list',
           },
         ]}
         buttons={subMenuButtons}
@@ -436,6 +442,7 @@ function AlertList({
         layer={currentAlert}
         onHide={() => {
           setAlertModalOpen(false);
+          setCurrentAlert(null);
           refreshData();
         }}
         show={alertModalOpen}

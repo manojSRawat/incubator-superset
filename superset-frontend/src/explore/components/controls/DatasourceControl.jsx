@@ -26,6 +26,9 @@ import Icon from 'src/components/Icon';
 import ChangeDatasourceModal from 'src/datasource/ChangeDatasourceModal';
 import DatasourceModal from 'src/datasource/DatasourceModal';
 import { postForm } from 'src/explore/exploreUtils';
+import Button from 'src/components/Button';
+import ErrorAlert from 'src/components/ErrorMessage/ErrorAlert';
+import WarningIconWithTooltip from 'src/components/WarningIconWithTooltip';
 
 const propTypes = {
   actions: PropTypes.object.isRequired,
@@ -50,6 +53,9 @@ const Styles = styled.div`
     align-items: center;
     border-bottom: 1px solid ${({ theme }) => theme.colors.grayscale.light2};
     padding: ${({ theme }) => 2 * theme.gridUnit}px;
+  }
+  .error-alert {
+    margin: ${({ theme }) => 2 * theme.gridUnit}px;
   }
   .ant-dropdown-trigger {
     margin-left: ${({ theme }) => 2 * theme.gridUnit}px;
@@ -84,6 +90,7 @@ const Styles = styled.div`
   }
   .dataset-svg {
     margin-right: ${({ theme }) => 2 * theme.gridUnit}px;
+    flex: none;
   }
 `;
 
@@ -145,35 +152,54 @@ class DatasourceControl extends React.PureComponent {
         datasourceKey: `${datasource.id}__${datasource.type}`,
         sql: datasource.sql,
       };
-      postForm('/superset/sqllab', payload);
+      postForm('/superset/sqllab/', payload);
     }
   }
 
   render() {
     const { showChangeDatasourceModal, showEditDatasourceModal } = this.state;
     const { datasource, onChange } = this.props;
+    const isMissingDatasource = datasource.id == null;
+
+    const isSqlSupported = datasource.type === 'table';
+
     const datasourceMenu = (
       <Menu onClick={this.handleMenuItemClick}>
         {this.props.isEditable && (
           <Menu.Item key={EDIT_DATASET} data-test="edit-dataset">
-            {t('Edit Dataset')}
+            {t('Edit dataset')}
           </Menu.Item>
         )}
-        <Menu.Item key={CHANGE_DATASET}>{t('Change Dataset')}</Menu.Item>
-        <Menu.Item key={VIEW_IN_SQL_LAB}>{t('View in SQL Lab')}</Menu.Item>
+        <Menu.Item key={CHANGE_DATASET}>{t('Change dataset')}</Menu.Item>
+        {isSqlSupported && (
+          <Menu.Item key={VIEW_IN_SQL_LAB}>{t('View in SQL Lab')}</Menu.Item>
+        )}
       </Menu>
     );
 
-    // eslint-disable-next-line camelcase
     const { health_check_message: healthCheckMessage } = datasource;
+
+    let extra = {};
+    if (datasource?.extra) {
+      try {
+        extra = JSON.parse(datasource?.extra);
+      } catch {} // eslint-disable-line no-empty
+    }
 
     return (
       <Styles className="DatasourceControl">
         <div className="data-container">
           <Icon name="dataset-physical" className="dataset-svg" />
-          <Tooltip title={datasource.name}>
-            <span className="title-select">{datasource.name}</span>
-          </Tooltip>
+          {/* Add a tooltip only for long dataset names */}
+          {!isMissingDatasource && datasource.name.length > 25 ? (
+            <Tooltip title={datasource.name}>
+              <span className="title-select">{datasource.name}</span>
+            </Tooltip>
+          ) : (
+            <span title={datasource.name} className="title-select">
+              {datasource.name}
+            </span>
+          )}
           {healthCheckMessage && (
             <Tooltip title={healthCheckMessage}>
               <Icon
@@ -181,6 +207,12 @@ class DatasourceControl extends React.PureComponent {
                 color={supersetTheme.colors.warning.base}
               />
             </Tooltip>
+          )}
+          {extra?.warning_markdown && ( // eslint-disable-line camelcase
+            <WarningIconWithTooltip
+              warningMarkdown={extra.warning_markdown} // eslint-disable-line camelcase
+              size={30}
+            />
           )}
           <Dropdown
             overlay={datasourceMenu}
@@ -196,6 +228,35 @@ class DatasourceControl extends React.PureComponent {
             </Tooltip>
           </Dropdown>
         </div>
+        {/* missing dataset */}
+        {isMissingDatasource && (
+          <div className="error-alert">
+            <ErrorAlert
+              level="warning"
+              title={t('Missing dataset')}
+              source="explore"
+              subtitle={
+                <>
+                  <p>
+                    {t(
+                      'The dataset linked to this chart may have been deleted.',
+                    )}
+                  </p>
+                  <p>
+                    <Button
+                      buttonStyle="primary"
+                      onClick={() =>
+                        this.handleMenuItemClick({ key: CHANGE_DATASET })
+                      }
+                    >
+                      {t('Change dataset')}
+                    </Button>
+                  </p>
+                </>
+              }
+            />
+          </div>
+        )}
         {showEditDatasourceModal && (
           <DatasourceModal
             datasource={datasource}

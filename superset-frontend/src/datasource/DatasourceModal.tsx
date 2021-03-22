@@ -17,7 +17,7 @@
  * under the License.
  */
 import React, { FunctionComponent, useState, useRef } from 'react';
-import { Alert } from 'react-bootstrap';
+import Alert from 'src/components/Alert';
 import Button from 'src/components/Button';
 import { styled, t, SupersetClient } from '@superset-ui/core';
 
@@ -61,15 +61,17 @@ interface DatasourceModalProps {
 }
 
 function buildMetricExtraJsonObject(metric: Record<string, unknown>) {
-  if (metric?.certified_by || metric?.certification_details) {
-    return JSON.stringify({
-      certification: {
-        certified_by: metric?.certified_by ?? null,
-        details: metric?.certification_details ?? null,
-      },
-    });
-  }
-  return null;
+  const certification =
+    metric?.certified_by || metric?.certification_details
+      ? {
+          certified_by: metric?.certified_by,
+          details: metric?.certification_details,
+        }
+      : undefined;
+  return JSON.stringify({
+    certification,
+    warning_markdown: metric?.warning_markdown,
+  });
 }
 
 const DatasourceModal: FunctionComponent<DatasourceModalProps> = ({
@@ -138,22 +140,21 @@ const DatasourceModal: FunctionComponent<DatasourceModalProps> = ({
     setErrors(err);
   };
 
-  const closeDialog = () => {
-    dialog.current?.destroy();
-  };
-
   const renderSaveDialog = () => (
     <div>
-      <Alert bsStyle="warning" className="pointer" onClick={closeDialog}>
-        <div>
-          <i className="fa fa-exclamation-triangle" />{' '}
-          {t(`The dataset configuration exposed here
+      <Alert
+        css={theme => ({
+          marginTop: theme.gridUnit * 4,
+          marginBottom: theme.gridUnit * 4,
+        })}
+        type="warning"
+        showIcon
+        message={t(`The dataset configuration exposed here
                 affects all the charts using this dataset.
                 Be mindful that changing settings
                 here may affect other charts
                 in undesirable ways.`)}
-        </div>
-      </Alert>
+      />
       {t('Are you sure you want to save and apply changes?')}
     </div>
   );
@@ -181,7 +182,7 @@ const DatasourceModal: FunctionComponent<DatasourceModalProps> = ({
         <>
           {isFeatureEnabled(FeatureFlag.ENABLE_REACT_CRUD_VIEWS) && (
             <Button
-              buttonSize="sm"
+              buttonSize="small"
               buttonStyle="default"
               data-test="datasource-modal-legacy-edit"
               className="m-r-5"
@@ -190,25 +191,25 @@ const DatasourceModal: FunctionComponent<DatasourceModalProps> = ({
                   currentDatasource.edit_url || currentDatasource.url;
               }}
             >
-              {t('Use Legacy Datasource Editor')}
+              {t('Use legacy datasource editor')}
             </Button>
           )}
           <Button
-            buttonSize="sm"
-            buttonStyle="primary"
+            data-test="datasource-modal-cancel"
+            buttonSize="small"
             className="m-r-5"
+            onClick={onHide}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            buttonSize="small"
+            buttonStyle="primary"
             data-test="datasource-modal-save"
             onClick={onClickSave}
             disabled={isSaving || errors.length > 0}
           >
             {t('Save')}
-          </Button>
-          <Button
-            data-test="datasource-modal-cancel"
-            buttonSize="sm"
-            onClick={onHide}
-          >
-            {t('Cancel')}
           </Button>
         </>
       }

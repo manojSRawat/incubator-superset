@@ -28,6 +28,8 @@ import { styled, t } from '@superset-ui/core';
 import { isFeatureEnabled, FeatureFlag } from 'src/featureFlags';
 
 import { areArraysShallowEqual } from 'src/reduxUtils';
+import { Tooltip } from 'src/common/components/Tooltip';
+import { detectOS } from 'src/utils/common';
 import * as Actions from '../actions/sqlLab';
 import SqlEditor from './SqlEditor';
 import TabStatusIcon from './TabStatusIcon';
@@ -65,7 +67,11 @@ const TabTitleWrapper = styled.div`
 
 const TabTitle = styled.span`
   margin-right: ${({ theme }) => theme.gridUnit * 2}px;
+  text-transform: none;
 `;
+
+// Get the user's OS
+const userOS = detectOS();
 
 class TabbedSqlEditors extends React.PureComponent {
   constructor(props) {
@@ -75,7 +81,6 @@ class TabbedSqlEditors extends React.PureComponent {
       sqlLabUrl,
       queriesArray: [],
       dataPreviewQueries: [],
-      hideLeftBar: false,
     };
     this.removeQueryEditor = this.removeQueryEditor.bind(this);
     this.renameTab = this.renameTab.bind(this);
@@ -306,8 +311,8 @@ class TabbedSqlEditors extends React.PureComponent {
     this.props.actions.cloneQueryToNewTab(qe, false);
   }
 
-  toggleLeftBar() {
-    this.setState(prevState => ({ hideLeftBar: !prevState.hideLeftBar }));
+  toggleLeftBar(qe) {
+    this.props.actions.toggleLeftBar(qe);
   }
 
   render() {
@@ -323,7 +328,7 @@ class TabbedSqlEditors extends React.PureComponent {
       const state = latestQuery ? latestQuery.state : '';
 
       const menu = (
-        <Menu>
+        <Menu style={{ width: 176 }}>
           <Menu.Item
             className="close-btn"
             key="1"
@@ -341,11 +346,11 @@ class TabbedSqlEditors extends React.PureComponent {
             </div>
             {t('Rename tab')}
           </Menu.Item>
-          <Menu.Item key="3" onClick={this.toggleLeftBar}>
+          <Menu.Item key="3" onClick={() => this.toggleLeftBar(qe)}>
             <div className="icon-container">
               <i className="fa fa-cogs" />
             </div>
-            {this.state.hideLeftBar ? t('Expand tool bar') : t('Hide tool bar')}
+            {qe.hideLeftBar ? t('Expand tool bar') : t('Hide tool bar')}
           </Menu.Item>
           <Menu.Item
             key="4"
@@ -364,7 +369,6 @@ class TabbedSqlEditors extends React.PureComponent {
           </Menu.Item>
         </Menu>
       );
-
       const tabHeader = (
         <TabTitleWrapper>
           <div data-test="dropdown-toggle-button">
@@ -382,13 +386,13 @@ class TabbedSqlEditors extends React.PureComponent {
         >
           <SqlEditor
             tables={this.props.tables.filter(xt => xt.queryEditorId === qe.id)}
-            queryEditor={qe}
+            queryEditorId={qe.id}
             editorQueries={this.state.queriesArray}
             dataPreviewQueries={this.state.dataPreviewQueries}
             latestQuery={latestQuery}
             database={database}
             actions={this.props.actions}
-            hideLeftBar={this.state.hideLeftBar}
+            hideLeftBar={qe.hideLeftBar}
             defaultQueryLimit={this.props.defaultQueryLimit}
             maxRow={this.props.maxRow}
             displayLimit={this.props.displayLimit}
@@ -409,7 +413,19 @@ class TabbedSqlEditors extends React.PureComponent {
         fullWidth={false}
         hideAdd={this.props.offline}
         onEdit={this.handleEdit}
-        addIcon={<i data-test="add-tab-icon" className="fa fa-plus-circle" />}
+        addIcon={
+          <Tooltip
+            id="add-tab"
+            placement="bottom"
+            title={
+              userOS === 'Windows'
+                ? t('New tab (Ctrl + q)')
+                : t('New tab (Ctrl + t)')
+            }
+          >
+            <i data-test="add-tab-icon" className="fa fa-plus-circle" />
+          </Tooltip>
+        }
       >
         {editors}
       </EditableTabs>
