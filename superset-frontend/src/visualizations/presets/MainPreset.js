@@ -64,9 +64,9 @@ import {
   RangeFilterPlugin,
   TimeFilterPlugin,
 } from 'src/filters/components/';
+import { ConditionalTableChartPlugin } from '@superset-ui/plugin-chart-conditional-table/src';
 import FilterBoxChartPlugin from '../FilterBox/FilterBoxChartPlugin';
 import TimeTableChartPlugin from '../TimeTable/TimeTableChartPlugin';
-import { ConditionalTableChartPlugin } from '@superset-ui/plugin-chart-conditional-table';
 
 export default class MainPreset extends Preset {
   constructor() {
@@ -110,7 +110,9 @@ export default class MainPreset extends Preset {
         new TreemapChartPlugin().configure({ key: 'treemap' }),
         new WordCloudChartPlugin().configure({ key: 'word_cloud' }),
         new WorldMapChartPlugin().configure({ key: 'world_map' }),
-        new ConditionalTableChartPlugin().configure({ key: 'conditional_table' }),
+        new ConditionalTableChartPlugin().configure({
+          key: 'conditional_table',
+        }),
         new EchartsTimeseriesChartPlugin().configure({
           key: 'echarts_timeseries',
         }),
