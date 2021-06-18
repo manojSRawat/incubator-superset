@@ -140,7 +140,9 @@ export default class MainPreset extends Preset {
         new TreemapChartPlugin().configure({ key: 'treemap' }),
         new WordCloudChartPlugin().configure({ key: 'word_cloud' }),
         new WorldMapChartPlugin().configure({ key: 'world_map' }),
-        new ConditionalTableChartPlugin().configure({ key: 'conditional_table' }),
+        new ConditionalTableChartPlugin().configure({
+          key: 'conditional_table',
+        }),
         new EchartsAreaChartPlugin().configure({
           key: 'echarts_area',
         }),
