@@ -30,7 +30,6 @@ import TextControl from './TextControl';
 import { FILTER_CONFIG_ATTRIBUTES } from '../../constants';
 // import { Col, Collapse, Row, Well } from 'react-bootstrap';
 
-const STYLE_ROW = { marginTop: '5px', minHeight: '30px' };
 const INTEGRAL_TYPES = new Set([
   'TINYINT',
   'SMALLINT',
@@ -60,6 +59,7 @@ const propTypes = {
   searchAllOptions: PropTypes.bool,
   showTotal: PropTypes.bool,
   dateFormat: PropTypes.string,
+  conditionalColumn: PropTypes.string,
   totalFormula: PropTypes.string,
   disableFilters: PropTypes.bool,
   defaultValue: PropTypes.string,
@@ -78,6 +78,7 @@ const defaultProps = {
   conditions: [],
   showTotal: false,
   dateFormat: null,
+  conditionalColumn: null,
   disableFilters: true,
   thumbnailHeight: 50,
   thumbnailWidth: 50,
@@ -101,6 +102,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       format,
       showTotal,
       dateFormat,
+      conditionalColumn,
       totalFormula,
       conditions,
       thumbnailHeight,
@@ -125,6 +127,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       remarkColumn,
       showTotal,
       dateFormat,
+      conditionalColumn,
       totalFormula,
       conditions,
       disableFilters,
@@ -146,7 +149,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       ['IN', 'Indian number'],
       ['PERCENTAGE', 'Percentage'],
       ['IMAGE', 'Image'],
-      ['DATE', 'Date']
+      ['DATE', 'Date'],
     ];
     this.onChange = this.onChange.bind(this);
     this.onControlChange = this.onControlChange.bind(this);
@@ -301,13 +304,25 @@ export default class ConditionalTableFilterBox extends React.Component {
         />
         <FormRow
           label={t('Date Format')}
-          tooltip={t('If it\'s a date filter')}
+          tooltip={t("If it's a date filter")}
           control={
             <TextControl
               name="dateFormat"
               placeholder="Date Format"
               value={this.state.dateFormat}
               onChange={v => this.onControlChange('dateFormat', v)}
+            />
+          }
+        />
+        <FormRow
+          label={t('Conditional Column')}
+          tooltip={t('Color will be applied from this column')}
+          control={
+            <TextControl
+              name="conditionalColumn"
+              placeholder="Conditional Column"
+              value={this.state.dateFormat}
+              onChange={v => this.onControlChange('conditionalColumn', v)}
             />
           }
         />
