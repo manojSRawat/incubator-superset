@@ -321,7 +321,7 @@ export default class ConditionalTableFilterBox extends React.Component {
             <TextControl
               name="conditionalColumn"
               placeholder="Conditional Column"
-              value={this.state.dateFormat}
+              value={this.state.conditionalColumn}
               onChange={v => this.onControlChange('conditionalColumn', v)}
             />
           }
