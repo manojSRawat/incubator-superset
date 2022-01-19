@@ -150,6 +150,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       ['PERCENTAGE', 'Percentage'],
       ['IMAGE', 'Image'],
       ['DATE', 'Date'],
+      ['LINK', 'Link'],
     ];
     this.onChange = this.onChange.bind(this);
     this.onControlChange = this.onControlChange.bind(this);
