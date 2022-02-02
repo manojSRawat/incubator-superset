@@ -60,6 +60,7 @@ const propTypes = {
   showTotal: PropTypes.bool,
   dateFormat: PropTypes.string,
   conditionalColumn: PropTypes.string,
+  conditionalColumnTextColor: PropTypes.object,
   totalFormula: PropTypes.string,
   disableFilters: PropTypes.bool,
   defaultValue: PropTypes.string,
@@ -79,6 +80,7 @@ const defaultProps = {
   showTotal: false,
   dateFormat: null,
   conditionalColumn: null,
+  conditionalColumnTextColor: { r: 0, g: 0, b: 0, a: 255 },
   disableFilters: true,
   thumbnailHeight: 50,
   thumbnailWidth: 50,
@@ -103,6 +105,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       showTotal,
       dateFormat,
       conditionalColumn,
+      conditionalColumnTextColor,
       totalFormula,
       conditions,
       thumbnailHeight,
@@ -128,6 +131,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       showTotal,
       dateFormat,
       conditionalColumn,
+      conditionalColumnTextColor,
       totalFormula,
       conditions,
       disableFilters,
@@ -324,6 +328,17 @@ export default class ConditionalTableFilterBox extends React.Component {
               placeholder="Conditional Column"
               value={this.state.conditionalColumn}
               onChange={v => this.onControlChange('conditionalColumn', v)}
+            />
+          }
+        />
+        <FormRow
+          label={t('Conditional Column Text Color')}
+          tooltip={t('Color will be applied from this column')}
+          control={
+            <ColorPickerControl
+              name="conditionalColumnTextColor"
+              value={this.state.conditionalColumnTextColor}
+              onChange={v => this.onControlChange('conditionalColumnTextColor', v)}
             />
           }
         />
