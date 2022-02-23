@@ -60,6 +60,7 @@ const propTypes = {
   showTotal: PropTypes.bool,
   dateFormat: PropTypes.string,
   conditionalColumn: PropTypes.string,
+  textColorReferenceColumn: PropTypes.string,
   conditionalColumnTextColor: PropTypes.object,
   totalFormula: PropTypes.string,
   disableFilters: PropTypes.bool,
@@ -80,6 +81,7 @@ const defaultProps = {
   showTotal: false,
   dateFormat: null,
   conditionalColumn: null,
+  textColorReferenceColumn: null,
   conditionalColumnTextColor: { r: 0, g: 0, b: 0, a: 255 },
   disableFilters: true,
   thumbnailHeight: 50,
@@ -105,6 +107,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       showTotal,
       dateFormat,
       conditionalColumn,
+      textColorReferenceColumn,
       conditionalColumnTextColor,
       totalFormula,
       conditions,
@@ -131,6 +134,7 @@ export default class ConditionalTableFilterBox extends React.Component {
       showTotal,
       dateFormat,
       conditionalColumn,
+      textColorReferenceColumn,
       conditionalColumnTextColor,
       totalFormula,
       conditions,
@@ -320,14 +324,26 @@ export default class ConditionalTableFilterBox extends React.Component {
           }
         />
         <FormRow
-          label={t('Conditional Column')}
+          label={t('Reference Background Color Column')}
           tooltip={t('Color will be applied from this column')}
           control={
             <TextControl
               name="conditionalColumn"
-              placeholder="Conditional Column"
+              placeholder="Reference Column"
               value={this.state.conditionalColumn}
               onChange={v => this.onControlChange('conditionalColumn', v)}
+            />
+          }
+        />
+        <FormRow
+          label={t('Reference Text Color Column')}
+          tooltip={t('Color will be applied from this column')}
+          control={
+            <TextControl
+              name="textColorReferenceColumn"
+              placeholder="Reference Column"
+              value={this.state.textColorReferenceColumn}
+              onChange={v => this.onControlChange('textColorReferenceColumn', v)}
             />
           }
         />
