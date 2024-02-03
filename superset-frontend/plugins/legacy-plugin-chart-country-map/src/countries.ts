@@ -112,8 +112,10 @@ import uzbekistan from './countries/uzbekistan.geojson';
 import venezuela from './countries/venezuela.geojson';
 import vietnam from './countries/vietnam.geojson';
 import zambia from './countries/zambia.geojson';
+import up from './countries/uttar_pradesh.geojson';
 
 export const countries = {
+  up,
   afghanistan,
   albania,
   algeria,
