@@ -48,6 +48,7 @@ import DndColumnSelectControl, {
 import XAxisSortControl from './XAxisSortControl';
 import CurrencyControl from './CurrencyControl';
 import ColumnConfigControl from './ColumnConfigControl';
+import ConditionalTableFilterBox from './ConditionalTableFilterBox';
 
 const controlMap = {
   AnnotationLayerControl,
@@ -81,5 +82,6 @@ const controlMap = {
   XAxisSortControl,
   ContourControl,
   ...sharedControlComponents,
+  ConditionalTableFilterBox
 };
 export default controlMap;

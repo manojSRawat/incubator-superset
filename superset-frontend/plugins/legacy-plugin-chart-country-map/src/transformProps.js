@@ -24,11 +24,15 @@ export default function transformProps(chartProps) {
     selectCountry,
     colorScheme,
     sliceId,
+    conditions,
+    legendAlignment,
   } = formData;
 
   return {
     width,
     height,
+    conditions,
+    legendAlignment,
     data: queriesData[0].data,
     country: selectCountry ? String(selectCountry).toLowerCase() : null,
     linearColorScheme,

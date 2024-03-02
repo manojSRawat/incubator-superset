@@ -44,6 +44,64 @@ const propTypes = {
 
 const maps = {};
 
+function isConditionSatisfied(originalValue, comparativeValue, symbol) {
+  if (!isNaN(originalValue) && !isNaN(comparativeValue)) {
+    const oValue = parseFloat(originalValue);
+    const cValue = parseFloat(comparativeValue);
+
+    switch (symbol) {
+      case 'GREATER':
+      case '>':
+        return oValue > cValue;
+      case 'GREATER_EQUAL':
+      case '>=':
+        return oValue >= cValue;
+      case 'LESS':
+      case '<':
+        return oValue < cValue;
+      case 'LESS_EQUAL':
+      case '<=':
+        return oValue <= cValue;
+      case 'EQUAL':
+      case '=':
+        return oValue === cValue;
+      default:
+        return false;
+    }
+  } else if (typeof originalValue === 'string' && typeof comparativeValue === 'string') {
+    switch (symbol) {
+      case 'EQUAL':
+      case '=':
+        return originalValue === comparativeValue;
+      default:
+        return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+function getConditionalColorScale(value, conditions) {
+  let color = 'rgba(255, 255, 255, 0)';
+
+  for (let i = 0; i < conditions.length; i++) {
+    if (
+      conditions[i].initialValue &&
+      isConditionSatisfied(value, conditions[i].initialValue, conditions[i].initialSymbol)
+    ) {
+      if (
+        conditions[i].finalValue &&
+        !isConditionSatisfied(value, conditions[i].finalValue, conditions[i].finalSymbol)
+      ) {
+        continue;
+      }
+      color = `rgba(${conditions[i].color.r},${conditions[i].color.g},${conditions[i].color.b},${conditions[i].color.a})`;
+    }
+  }
+
+  return color;
+}
+
 function CountryMap(element, props) {
   const {
     data,
@@ -54,6 +112,8 @@ function CountryMap(element, props) {
     numberFormat,
     colorScheme,
     sliceId,
+    conditions,
+    legendAlignment,
   } = props;
 
   const container = element;
@@ -64,11 +124,18 @@ function CountryMap(element, props) {
   const colorScale = CategoricalColorNamespace.getScale(colorScheme);
 
   const colorMap = {};
-  data.forEach(d => {
-    colorMap[d.country_id] = colorScheme
-      ? colorScale(d.country_id, sliceId)
-      : linearColorScale(d.metric);
-  });
+  if (conditions && conditions.length && conditions[0].conditions.length) {
+    data.forEach(d => {
+      colorMap[d.country_id] = getConditionalColorScale(d.metric, conditions[0].conditions);
+    });
+  } else {
+    data.forEach(d => {
+      colorMap[d.country_id] = colorScheme
+        ? colorScale(d.country_id, sliceId)
+        : linearColorScale(d.metric);
+    });
+  }
+
   const colorFn = d => colorMap[d.properties.ISO] || 'none';
 
   const path = d3.geo.path();
@@ -98,8 +165,30 @@ function CountryMap(element, props) {
     .append('text')
     .classed('result-text', true)
     .attr('dy', '1em');
+  const legends = div
+    .append('div')
+    .append('ul')
+    .classed('list-inline', true)
+    .style({ 'text-align': legendAlignment });
 
   let centered;
+
+  if (conditions && conditions.length && conditions[0].conditions.length) {
+    conditions[0].conditions.forEach(condition => {
+      const conditionText =
+        condition.initialValue && condition.finalValue
+          ? `${condition.initialValue}-${condition.finalValue}`
+          : condition.initialSymbol + condition.initialValue;
+      legends
+        .append('li')
+        .classed('ledgend-box-wrapper', true)
+        .html(
+          `<span class="ledgend-box" style="background: rgba(${condition.color.r},${condition.color.g},${condition.color.b},${condition.color.a})"></span>`,
+        )
+        .append('span')
+        .text(conditionText);
+    });
+  }
 
   const clicked = function clicked(d) {
     const hasCenter = d && centered !== d;
@@ -174,7 +263,7 @@ function CountryMap(element, props) {
     if (c !== 'none') {
       c = d3.rgb(c).darker().toString();
     }
-    d3.select(this).style('fill', c);
+    d3.select(this).style('fill', 'rgb(220,220,220)');
     selectAndDisplayNameOfRegion(d);
     const result = data.filter(
       region => region.country_id === d.properties.ISO,
